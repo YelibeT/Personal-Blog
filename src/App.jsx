@@ -59,8 +59,8 @@ function App() {
   return (
     <div className={darkMode ? "site dark" : "site"}>
       <header className="topbar">
-        <a className="wordmark" href="#top" aria-label="Mina Park home">
-          <span>MP</span> Mina Park
+        <a className="wordmark" href="#top" aria-label="Biniyam Abebe home">
+          <span>BA</span> Biniyam Abebe
         </a>
         <nav>
           <a href="#writing">Writing</a>
@@ -79,7 +79,7 @@ function App() {
       <main id="top">
         <section className="intro" id="about">
           <p className="eyebrow">
-            Independent writer & designer <span>✳</span> Est. 2018
+            INDEPENDENT WRITER & MED-STUDENT <span>✳</span> Est. 2018
           </p>
           <h1>
             Notes on making
@@ -87,8 +87,9 @@ function App() {
             <em>room for wonder.</em>
           </h1>
           <p className="intro-copy">
-            I’m Mina, a designer and lifelong learner writing about creative
-            work, everyday rituals, and the good stuff hiding in plain sight.
+            I’m Biniyam, a medical student and lifelong learner writing about
+            creative work, everyday rituals, and the good stuff hiding in
+            plain sight.
           </p>
           <a className="text-link" href="#writing">
             Explore the writing <span>↘</span>
@@ -191,7 +192,7 @@ function App() {
         </section>
       </main>
       <footer>
-        <span>© 2024 Mina Park</span>
+        <span>© 2024 Biniyam Abebe</span>
         <span>
           Made with intention <i>✳</i>
         </span>
