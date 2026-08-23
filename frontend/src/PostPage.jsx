@@ -1,25 +1,31 @@
 import { useState } from "react";
 
-function PostPage({ onBack, darkMode, onToggleTheme }) {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("Personal");
-  const [excerpt, setExcerpt] = useState("");
-  const [body, setBody] = useState("");
+function PostPage({ draft, onSaveDraft, onBack, darkMode, onToggleTheme }) {
+  const [title, setTitle] = useState(draft?.title || "");
+  const [category, setCategory] = useState(draft?.category || "Personal");
+  const [excerpt, setExcerpt] = useState(draft?.excerpt || "");
+  const [body, setBody] = useState(draft?.body || "");
   const [coverImage, setCoverImage] = useState(null);
   const [attachments, setAttachments] = useState([]);
-  const [saved, setSaved] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("");
 
   const handleCoverChange = (event) => setCoverImage(event.target.files[0] || null);
   const handleAttachmentChange = (event) => setAttachments(Array.from(event.target.files));
   const handleSubmit = (event) => {
     event.preventDefault();
-    setSaved(true);
+    const action = event.nativeEvent.submitter.value;
+    if (action === "publish") {
+      setSaveStatus("Published");
+      return;
+    }
+    onSaveDraft({ id: draft?.id, title, category, excerpt, body, coverImageName: coverImage?.name || draft?.coverImageName || "", attachmentNames: attachments.map((file) => file.name) });
+    setSaveStatus("Draft saved");
   };
 
   return (
     <div className={darkMode ? "site dark" : "site"}>
       <header className="topbar post-topbar">
-        <button className="wordmark post-back" onClick={onBack}>
+        <button className="wordmark post-back" onClick={onBack} aria-label="Biniyam Abebe home">
           <span>BA</span> Biniyam Abebe
         </button>
         <div className="admin-label"><span className="status-dot" /> Writing a new post</div>
@@ -31,7 +37,7 @@ function PostPage({ onBack, darkMode, onToggleTheme }) {
         <button className="back-link" onClick={onBack}>← Back to dashboard</button>
         <div className="editor-heading">
           <div><p className="eyebrow">Create something worth reading</p><h1>New post</h1></div>
-          <span className="editor-status">Draft</span>
+          <span className="editor-status">{saveStatus || "Unsaved"}</span>
         </div>
         <form className="post-editor" onSubmit={handleSubmit}>
           <section className="editor-main">
@@ -43,7 +49,10 @@ function PostPage({ onBack, darkMode, onToggleTheme }) {
             <section className="editor-panel"><h2>Post settings</h2><label className="editor-field"><span>Category</span><select value={category} onChange={(event) => setCategory(event.target.value)}><option>Personal</option><option>Notes</option><option>Medicine</option><option>Learning</option></select></label></section>
             <section className="editor-panel"><h2>Cover image</h2><label className="upload-control"><span>{coverImage ? coverImage.name : "Choose an image"}</span><input type="file" accept="image/*" onChange={handleCoverChange} /></label><small>JPG, PNG, or WebP up to 5 MB.</small></section>
             <section className="editor-panel"><h2>Attachments</h2><label className="upload-control"><span>＋ Add files</span><input type="file" multiple onChange={handleAttachmentChange} /></label>{attachments.length > 0 && <ul className="attachment-list">{attachments.map((file) => <li key={file.name}>{file.name}</li>)}</ul>}</section>
-            <button className="primary-action editor-submit" type="submit">{saved ? "Draft saved" : "Save draft"}</button>
+            <div className="editor-actions">
+              <button className="secondary-action" type="submit" name="action" value="draft">Save as draft</button>
+              <button className="primary-action editor-submit" type="submit" name="action" value="publish">Post</button>
+            </div>
           </aside>
         </form>
       </main>

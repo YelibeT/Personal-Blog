@@ -1,12 +1,13 @@
 import posts from "./posts";
 
-function AdminPage({ onBack, onNewPost, darkMode, onToggleTheme }) {
+function AdminPage({ onBack, onNewPost, onDrafts, draftCount, darkMode, onToggleTheme }) {
   return (
     <div className={darkMode ? "site dark" : "site"}>
       <header className="topbar admin-topbar">
-        <button className="wordmark admin-back" onClick={onBack}>
+        <button className="wordmark admin-back" onClick={onBack} aria-label="Biniyam Abebe home">
           <span>BA</span> Biniyam Abebe
         </button>
+        <nav className="admin-nav"><button className="admin-nav-active">Dashboard</button><button onClick={onDrafts}>Drafts</button></nav>
         <div className="admin-label"><span className="status-dot" /> Admin workspace</div>
         <button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle color theme">
           <span>{darkMode ? "☼" : "◐"}</span>
@@ -21,10 +22,10 @@ function AdminPage({ onBack, onNewPost, darkMode, onToggleTheme }) {
           <div><span>Published posts</span><strong>{posts.length}</strong><small className="neutral">No posts yet</small></div>
           <div><span>Newsletter readers</span><strong>248</strong><small className="positive">↑ 12% this month</small></div>
           <div><span>Page views</span><strong>1,842</strong><small className="positive">↑ 18% this month</small></div>
-          <div><span>Drafts</span><strong>3</strong><small className="neutral">Ready when you are</small></div>
+          <button className="admin-stat-button" onClick={onDrafts}><span>Drafts</span><strong>{draftCount}</strong><small className="neutral">View saved drafts</small></button>
         </div>
         <div className="admin-content-grid">
-          <section className="admin-panel posts-panel"><div className="panel-heading"><div><p className="eyebrow">Your library</p><h2>Recent writing</h2></div><button className="quiet-action">View all ↗</button></div><div className="empty-admin"><span>✳</span><strong>Your first story starts here.</strong><p>Write something worth coming back to.</p><button className="primary-action small-action" onClick={onNewPost}>＋ Start a draft</button></div></section>
+          <section className="admin-panel posts-panel"><div className="panel-heading"><div><p className="eyebrow">Your library</p><h2>Recent writing</h2></div><button className="quiet-action" onClick={onDrafts}>View drafts ↗</button></div><div className="empty-admin"><span>✳</span><strong>Your first story starts here.</strong><p>Write something worth coming back to.</p><button className="primary-action small-action" onClick={onNewPost}>＋ Start a draft</button></div></section>
           <section className="admin-panel"><div className="panel-heading"><div><p className="eyebrow">Audience</p><h2>Newsletter</h2></div><button className="quiet-action">Manage ↗</button></div><div className="audience-number"><strong>248</strong><span>subscribers</span></div><div className="mini-chart"><i /><i /><i /><i /><i /><i /><i /><i /><i /></div><p className="chart-note">Your list is growing steadily.</p></section>
         </div>
       </main>

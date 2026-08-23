@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminPage from "./Admin";
 import "./App.css";
+import DraftsPage from "./DraftsPage";
 import PostPage from "./PostPage";
 import posts from "./posts";
 
@@ -12,13 +13,33 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [drafts, setDrafts] = useState(() => JSON.parse(localStorage.getItem("blog-drafts") || "[]"));
+  const [editorDraft, setEditorDraft] = useState(null);
   const [isPostEditor, setIsPostEditor] = useState(() => window.location.hash === "#admin/new-post");
+  const [isDraftsPage, setIsDraftsPage] = useState(() => window.location.hash === "#admin/drafts");
 
   useEffect(() => {
-    const handleHashChange = () => setIsPostEditor(window.location.hash === "#admin/new-post");
+    const handleHashChange = () => {
+      setIsPostEditor(window.location.hash === "#admin/new-post");
+      setIsDraftsPage(window.location.hash === "#admin/drafts");
+    };
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
+
+  const saveDraft = (draft) => {
+    const nextDrafts = [{ ...draft, id: draft.id || Date.now(), updatedAt: new Date().toLocaleDateString() }, ...drafts.filter((item) => item.id !== draft.id)];
+    setDrafts(nextDrafts);
+    localStorage.setItem("blog-drafts", JSON.stringify(nextDrafts));
+  };
+
+  const openEditor = (draft = null) => {
+    setEditorDraft(draft);
+    window.location.hash = "admin/new-post";
+    setIsPostEditor(true);
+    setIsDraftsPage(false);
+    setIsAdmin(false);
+  };
   const visiblePosts = useMemo(
     () =>
       posts.filter((post) =>
@@ -30,11 +51,15 @@ function App() {
   );
 
   if (isAdmin) {
-    return <AdminPage onBack={() => setIsAdmin(false)} onNewPost={() => { window.location.hash = "admin/new-post"; setIsPostEditor(true); setIsAdmin(false); }} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
+    return <AdminPage onBack={() => setIsAdmin(false)} onNewPost={() => openEditor()} onDrafts={() => { window.location.hash = "admin/drafts"; setIsDraftsPage(true); setIsAdmin(false); }} draftCount={drafts.length} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
+  }
+
+  if (isDraftsPage) {
+    return <DraftsPage drafts={drafts} onBack={() => { window.location.hash = ""; setIsDraftsPage(false); setIsAdmin(true); }} onNewPost={() => openEditor()} onEditDraft={openEditor} onDeleteDraft={(id) => { const nextDrafts = drafts.filter((draft) => draft.id !== id); setDrafts(nextDrafts); localStorage.setItem("blog-drafts", JSON.stringify(nextDrafts)); }} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
   }
 
   if (isPostEditor) {
-    return <PostPage onBack={() => { window.location.hash = ""; setIsPostEditor(false); setIsAdmin(true); }} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
+    return <PostPage draft={editorDraft} onSaveDraft={saveDraft} onBack={() => { window.location.hash = ""; setIsPostEditor(false); setEditorDraft(null); setIsAdmin(true); }} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
   }
 
   return (
