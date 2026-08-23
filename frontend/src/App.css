@@ -748,6 +748,220 @@ footer i {
   margin-left: 5px;
 }
 
+.post-back {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.post-page {
+  padding-top: 62px;
+  padding-bottom: 105px;
+}
+
+.back-link {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+.post-page article {
+  max-width: 900px;
+  margin: 58px auto 0;
+}
+
+.article-heading {
+  max-width: 700px;
+  margin-bottom: 48px;
+}
+
+.article-heading .post-meta {
+  justify-content: flex-start;
+  gap: 24px;
+}
+
+.article-heading h1 {
+  font-size: clamp(52px, 7vw, 88px);
+  margin: 24px 0 22px;
+}
+
+.article-lede {
+  max-width: 560px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.article-read {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.article-image {
+  width: 100%;
+  max-height: 560px;
+  object-fit: cover;
+  filter: saturate(0.78);
+}
+
+.article-body {
+  max-width: 610px;
+  margin: 56px auto 0;
+}
+
+.article-body p {
+  color: var(--ink);
+  font-family: "Playfair Display", serif;
+  font-size: 21px;
+  line-height: 1.75;
+  margin: 0 0 28px;
+}
+
+.post-editor-page {
+  padding-top: 62px;
+  padding-bottom: 105px;
+}
+
+.editor-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  margin: 52px 0 44px;
+}
+
+.editor-heading h1 {
+  font-size: clamp(50px, 6vw, 76px);
+}
+
+.editor-status {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 7px 11px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.post-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.7fr);
+  gap: 52px;
+  align-items: start;
+}
+
+.editor-main,
+.editor-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.editor-field > span,
+.editor-panel h2 {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.editor-field input,
+.editor-field textarea,
+.editor-field select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  outline: 0;
+  background: var(--card);
+  color: var(--ink);
+  padding: 14px 15px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.editor-field input:focus,
+.editor-field textarea:focus,
+.editor-field select:focus {
+  border-color: var(--accent);
+}
+
+.editor-field input::placeholder,
+.editor-field textarea::placeholder {
+  color: var(--muted);
+}
+
+.editor-field .story-input {
+  min-height: 310px;
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.editor-panel {
+  border: 1px solid var(--line);
+  padding: 22px;
+  background: var(--card);
+}
+
+.editor-panel h2 {
+  margin: 0 0 20px;
+}
+
+.upload-control {
+  display: block;
+  border: 1px dashed var(--muted);
+  color: var(--ink);
+  cursor: pointer;
+  padding: 15px;
+  font-size: 12px;
+}
+
+.upload-control:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.upload-control input {
+  display: none;
+}
+
+.editor-panel > small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.attachment-list {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 13px 0 0;
+  padding-left: 17px;
+  overflow-wrap: anywhere;
+}
+
+.editor-submit {
+  width: 100%;
+}
+
 @media (max-width: 720px) {
   .topbar:not(.admin-topbar),
   main:not(.admin-main),
@@ -917,6 +1131,56 @@ footer i {
 
   .social-links {
     grid-template-columns: 1fr;
+  }
+
+  .post-page {
+    padding-top: 42px;
+    padding-bottom: 65px;
+  }
+
+  .post-page article {
+    margin-top: 44px;
+  }
+
+  .article-heading {
+    margin-bottom: 32px;
+  }
+
+  .article-heading h1 {
+    font-size: 48px;
+  }
+
+  .article-lede {
+    font-size: 15px;
+  }
+
+  .article-body {
+    margin-top: 38px;
+  }
+
+  .article-body p {
+    font-size: 18px;
+  }
+
+  .post-editor-page {
+    padding-top: 42px;
+    padding-bottom: 65px;
+  }
+
+  .editor-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 18px;
+    margin: 42px 0 32px;
+  }
+
+  .editor-heading h1 {
+    font-size: 48px;
+  }
+
+  .post-editor {
+    grid-template-columns: 1fr;
+    gap: 34px;
   }
 
   .section-heading h2,

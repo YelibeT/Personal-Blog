@@ -1,40 +1,10 @@
-import { useMemo, useState } from "react";
+
+
+import { useEffect, useMemo, useState } from "react";
+import AdminPage from "./Admin";
 import "./App.css";
-
-const posts = [];
-
-function AdminPage({ onBack, darkMode, onToggleTheme }) {
-  return (
-    <div className={darkMode ? "site dark" : "site"}>
-      <header className="topbar admin-topbar">
-        <button className="wordmark admin-back" onClick={onBack}>
-          <span>BA</span> Biniyam Abebe
-        </button>
-        <div className="admin-label"><span className="status-dot" /> Admin workspace</div>
-        <button className="theme-toggle" onClick={onToggleTheme} aria-label="Toggle color theme">
-          <span>{darkMode ? "☼" : "◐"}</span>
-        </button>
-      </header>
-      <main className="admin-main">
-        <div className="admin-heading">
-          <div><p className="eyebrow">Good morning, Biniyam</p><h1>Content overview</h1><p className="admin-subtitle">Keep your corner of the internet thoughtful and up to date.</p></div>
-          <button className="primary-action">＋ New post</button>
-        </div>
-        <div className="admin-stats">
-          <div><span>Published posts</span><strong>{posts.length}</strong><small className="neutral">No posts yet</small></div>
-          <div><span>Newsletter readers</span><strong>248</strong><small className="positive">↑ 12% this month</small></div>
-          <div><span>Page views</span><strong>1,842</strong><small className="positive">↑ 18% this month</small></div>
-          <div><span>Drafts</span><strong>3</strong><small className="neutral">Ready when you are</small></div>
-        </div>
-        <div className="admin-content-grid">
-          <section className="admin-panel posts-panel"><div className="panel-heading"><div><p className="eyebrow">Your library</p><h2>Recent writing</h2></div><button className="quiet-action">View all ↗</button></div><div className="empty-admin"><span>✳</span><strong>Your first story starts here.</strong><p>Write something worth coming back to.</p><button className="primary-action small-action">＋ Start a draft</button></div></section>
-          <section className="admin-panel"><div className="panel-heading"><div><p className="eyebrow">Audience</p><h2>Newsletter</h2></div><button className="quiet-action">Manage ↗</button></div><div className="audience-number"><strong>248</strong><span>subscribers</span></div><div className="mini-chart"><i /><i /><i /><i /><i /><i /><i /><i /><i /></div><p className="chart-note">Your list is growing steadily.</p></section>
-        </div>
-      </main>
-      <footer className="admin-footer"><span>© 2024 Biniyam Abebe</span><span>Admin workspace <i>✳</i></span><button className="footer-back" onClick={onBack}>← Back to site</button></footer>
-    </div>
-  );
-}
+import PostPage from "./PostPage";
+import posts from "./posts";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -42,6 +12,13 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [isPostEditor, setIsPostEditor] = useState(() => window.location.hash === "#admin/new-post");
+
+  useEffect(() => {
+    const handleHashChange = () => setIsPostEditor(window.location.hash === "#admin/new-post");
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
   const visiblePosts = useMemo(
     () =>
       posts.filter((post) =>
@@ -53,7 +30,11 @@ function App() {
   );
 
   if (isAdmin) {
-    return <AdminPage onBack={() => setIsAdmin(false)} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
+    return <AdminPage onBack={() => setIsAdmin(false)} onNewPost={() => { window.location.hash = "admin/new-post"; setIsPostEditor(true); setIsAdmin(false); }} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
+  }
+
+  if (isPostEditor) {
+    return <PostPage onBack={() => { window.location.hash = ""; setIsPostEditor(false); setIsAdmin(true); }} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />;
   }
 
   return (
