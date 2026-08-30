@@ -1,16 +1,19 @@
 import express from "express";
 import postRoutes from "./routes/postRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 
-app.use("/posts", postRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
 
 app.get("/", (req, res) => {
-  res.json({ message: "Backend is running!" });
+  res.json({ message: "Blog API is running" });
 });
+
+const PORT = 8800;
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
