@@ -20,7 +20,7 @@ function PostPage({
   );
 
   const [body, setBody] = useState(
-    draft?.content || draft?.body || ""
+    draft?.content || ""
   );
 
   const [coverImage, setCoverImage] = useState(null);
@@ -44,18 +44,9 @@ function PostPage({
   };
 
   const savePost = async (published) => {
-    if (!title.trim()) {
-      setSaveStatus("Title is required");
-      return;
-    }
-
-    if (!body.trim()) {
-      setSaveStatus("Story is required");
-      return;
-    }
-
     try {
       setSaving(true);
+
       setSaveStatus(
         published
           ? "Publishing..."
@@ -72,31 +63,25 @@ function PostPage({
 
       let response;
 
-      /*
-       * Existing draft
-       * ----------------
-       * Update the existing database post.
-       */
       if (draft?.id) {
         response = await apiFetch(
           `/admin/posts/${draft.id}`,
           {
             method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
             body: JSON.stringify(postData)
           }
         );
-      }
-
-      /*
-       * New post
-       * --------
-       * Create a new database post.
-       */
-      else {
+      } else {
         response = await apiFetch(
           "/admin/posts",
           {
             method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
             body: JSON.stringify(postData)
           }
         );
@@ -107,7 +92,7 @@ function PostPage({
       if (!response.ok) {
         throw new Error(
           data.error ||
-            "Failed to save post"
+          "Failed to save post"
         );
       }
 
@@ -117,15 +102,9 @@ function PostPage({
           : "Draft saved"
       );
 
-      /*
-       * Give the user a moment to see
-       * the success message, then return
-       * to the admin dashboard.
-       */
       setTimeout(() => {
         onBack();
       }, 700);
-
     } catch (error) {
       console.error(
         "Failed to save post:",
@@ -134,7 +113,7 @@ function PostPage({
 
       setSaveStatus(
         error.message ||
-          "Something went wrong"
+        "Something went wrong"
       );
     } finally {
       setSaving(false);
@@ -148,11 +127,9 @@ function PostPage({
       event.nativeEvent
         .submitter?.value;
 
-    if (action === "publish") {
-      await savePost(true);
-    } else {
-      await savePost(false);
-    }
+    await savePost(
+      action === "publish"
+    );
   };
 
   return (
@@ -205,8 +182,7 @@ function PostPage({
         <div className="editor-heading">
           <div>
             <p className="eyebrow">
-              Create something worth
-              reading
+              Create something worth reading
             </p>
 
             <h1>
@@ -217,8 +193,7 @@ function PostPage({
           </div>
 
           <span className="editor-status">
-            {saveStatus ||
-              "Unsaved"}
+            {saveStatus || "Unsaved"}
           </span>
         </div>
 
@@ -227,107 +202,69 @@ function PostPage({
           onSubmit={handleSubmit}
         >
           <section className="editor-main">
-            {/* Title */}
             <label className="editor-field">
-              <span>
-                Title
-              </span>
+              <span>Title</span>
 
               <input
                 value={title}
                 onChange={(event) =>
-                  setTitle(
-                    event.target.value
-                  )
+                  setTitle(event.target.value)
                 }
                 placeholder="Give your post a name"
-                required
               />
             </label>
 
-            {/* Excerpt */}
             <label className="editor-field">
-              <span>
-                Short description
-              </span>
+              <span>Short description</span>
 
               <textarea
                 value={excerpt}
                 onChange={(event) =>
-                  setExcerpt(
-                    event.target.value
-                  )
+                  setExcerpt(event.target.value)
                 }
                 placeholder="What is this post about?"
                 rows="3"
               />
             </label>
 
-            {/* Body */}
             <label className="editor-field">
-              <span>
-                Story
-              </span>
+              <span>Story</span>
 
               <textarea
                 className="story-input"
                 value={body}
                 onChange={(event) =>
-                  setBody(
-                    event.target.value
-                  )
+                  setBody(event.target.value)
                 }
                 placeholder="Start writing here..."
                 rows="14"
-                required
               />
             </label>
           </section>
 
           <aside className="editor-sidebar">
-            {/* Category */}
             <section className="editor-panel">
-              <h2>
-                Post settings
-              </h2>
+              <h2>Post settings</h2>
 
               <label className="editor-field">
-                <span>
-                  Category
-                </span>
+                <span>Category</span>
 
                 <select
                   value={category}
                   onChange={(event) =>
-                    setCategory(
-                      event.target.value
-                    )
+                    setCategory(event.target.value)
                   }
                 >
-                  <option>
-                    Personal
-                  </option>
-
-                  <option>
-                    Notes
-                  </option>
-
-                  <option>
-                    Medicine
-                  </option>
-
-                  <option>
-                    Learning
-                  </option>
+                  <option>Personal</option>
+                  <option>Notes</option>
+                  <option>Medicine</option>
+                  <option>Learning</option>
                 </select>
               </label>
             </section>
 
-            {/* Cover image */}
             <section className="editor-panel">
-              <h2>
-                Cover image
-              </h2>
+              <h2>Cover image</h2>
 
               <label className="upload-control">
                 <span>
@@ -340,57 +277,39 @@ function PostPage({
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={
-                    handleCoverChange
-                  }
+                  onChange={handleCoverChange}
                 />
               </label>
 
               <small>
-                JPG, PNG, or WebP up
-                to 5 MB.
+                JPG, PNG, or WebP up to 5 MB.
               </small>
             </section>
 
-            {/* Attachments */}
             <section className="editor-panel">
-              <h2>
-                Attachments
-              </h2>
+              <h2>Attachments</h2>
 
               <label className="upload-control">
-                <span>
-                  ＋ Add files
-                </span>
+                <span>＋ Add files</span>
 
                 <input
                   type="file"
                   multiple
-                  onChange={
-                    handleAttachmentChange
-                  }
+                  onChange={handleAttachmentChange}
                 />
               </label>
 
-              {attachments.length >
-                0 && (
+              {attachments.length > 0 && (
                 <ul className="attachment-list">
-                  {attachments.map(
-                    (file) => (
-                      <li
-                        key={
-                          file.name
-                        }
-                      >
-                        {file.name}
-                      </li>
-                    )
-                  )}
+                  {attachments.map((file) => (
+                    <li key={file.name}>
+                      {file.name}
+                    </li>
+                  ))}
                 </ul>
               )}
             </section>
 
-            {/* Actions */}
             <div className="editor-actions">
               <button
                 className="secondary-action"

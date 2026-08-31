@@ -57,17 +57,14 @@ export const createPost = async (req, res) => {
     try {
         const { title, content, category, excerpt, published } = req.body;
 
-        if (!title || !content) {
-            return res.status(400).json({
-                error: "Title and content are required."
-            });
-        }
-
         const post = await prisma.post.create({
             data: {
-                title,
-                content,
-                published,
+                title: title || null,
+                content: content || null,
+                category: category || "Personal",
+                excerpt: excerpt || null,
+                coverImage: coverImage || null,
+                published: published === true,
                 authorId: req.user.userId
             }
         });
@@ -120,38 +117,27 @@ export const updatePost = async (req, res) => {
 };
 
 // PUBLISH / UNPUBLISH post - Admin only
-export const publishPost = async (req, res) => {
-    try {
-        const { id } = req.params;
 
-        const post = await prisma.post.findUnique({
-            where: {
-                id: parseInt(id)
-            }
-        });
 
-        if (!post) {
-            return res.status(404).json({
-                error: "Post not found"
-            });
-        }
+export const getPublishedPosts = async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        published: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
 
-        const updatedPost = await prisma.post.update({
-            where: {
-                id: parseInt(id)
-            },
-            data: {
-                published: !post.published
-            }
-        });
+    res.status(200).json(posts);
+  } catch (error) {
+    console.error("Failed to fetch published posts:", error);
 
-        res.status(200).json(updatedPost);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            error: "Failed to change post publication status"
-        });
-    }
+    res.status(500).json({
+      error: "Failed to fetch posts"
+    });
+  }
 };
 
 // DELETE post - Admin only

@@ -4,16 +4,17 @@ import AdminLogin from "./AdminLogin";
 import "./App.css";
 import DraftsPage from "./DraftsPage";
 import PostPage from "./PostPage";
-import { apiFetch } from "./api";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
-  // Admin authentication
+  // Admin state
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(
+    () => window.location.pathname === "/admin"
+  );
 
-  // Navigation
+  // Public site state
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subscribed, setSubscribed] = useState(false);
@@ -22,109 +23,123 @@ function App() {
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
 
-  // Admin drafts
-  const [drafts, setDrafts] = useState([]);
-
-  // Editor
+  // Admin editor
   const [editorDraft, setEditorDraft] = useState(null);
 
   const [isPostEditor, setIsPostEditor] = useState(
-    () => window.location.hash === "#admin/new-post",
+    () => window.location.hash === "#admin/new-post"
   );
 
   const [isDraftsPage, setIsDraftsPage] = useState(
-    () => window.location.hash === "#admin/drafts",
+    () => window.location.hash === "#admin/drafts"
   );
 
   /*
-   * Load published posts for visitors
+   * Load published posts for the public website.
    */
   useEffect(() => {
-    const loadPosts = async () => {
+    const loadPublicPosts = async () => {
       try {
-        const response = await apiFetch("/posts");
+        setPostsLoading(true);
+
+        const response = await fetch(
+          "http://localhost:8800/api/posts"
+        );
+
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data.error || "Failed to load posts",
+            data.error || "Failed to load posts"
           );
         }
 
         setPosts(data);
       } catch (error) {
-        console.error("Failed to load public posts:", error);
+        console.error("Failed to load posts:", error);
       } finally {
         setPostsLoading(false);
       }
     };
 
-    loadPosts();
+    loadPublicPosts();
   }, []);
 
   /*
-   * Handle hash routes
+   * Handle browser navigation.
    */
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
+    const handleRouteChange = () => {
+      const isAdminRoute =
+        window.location.pathname === "/admin";
 
-      setIsPostEditor(hash === "#admin/new-post");
-      setIsDraftsPage(hash === "#admin/drafts");
+      setShowAdminLogin(isAdminRoute);
+
+      setIsPostEditor(
+        window.location.hash === "#admin/new-post"
+      );
+
+      setIsDraftsPage(
+        window.location.hash === "#admin/drafts"
+      );
     };
 
     window.addEventListener(
+      "popstate",
+      handleRouteChange
+    );
+
+    window.addEventListener(
       "hashchange",
-      handleHashChange,
+      handleRouteChange
     );
 
     return () => {
       window.removeEventListener(
+        "popstate",
+        handleRouteChange
+      );
+
+      window.removeEventListener(
         "hashchange",
-        handleHashChange,
+        handleRouteChange
       );
     };
   }, []);
 
   /*
-   * Load drafts from localStorage for now.
+   * Go to admin login.
    *
-   * We will replace this with the backend API
-   * after the navigation/authentication is working.
+   * There is intentionally no admin link
+   * visible on the public website.
    */
-  useEffect(() => {
-    const savedDrafts = JSON.parse(
-      localStorage.getItem("blog-drafts") || "[]",
-    );
+  const openAdminLogin = () => {
+    window.history.pushState({}, "", "/admin");
+    window.location.hash = "";
 
-    setDrafts(savedDrafts);
-  }, []);
-
-  /*
-   * Save a draft
-   */
-  const saveDraft = (draft) => {
-    const nextDrafts = [
-      {
-        ...draft,
-        id: draft.id || Date.now(),
-        updatedAt: new Date().toLocaleDateString(),
-      },
-      ...drafts.filter(
-        (item) => item.id !== draft.id,
-      ),
-    ];
-
-    setDrafts(nextDrafts);
-
-    localStorage.setItem(
-      "blog-drafts",
-      JSON.stringify(nextDrafts),
-    );
+    setShowAdminLogin(true);
+    setIsAdmin(false);
+    setIsPostEditor(false);
+    setIsDraftsPage(false);
+    setEditorDraft(null);
   };
 
   /*
-   * Open post editor
+   * Return to public homepage.
+   */
+  const goHome = () => {
+    window.history.pushState({}, "", "/");
+    window.location.hash = "";
+
+    setShowAdminLogin(false);
+    setIsAdmin(false);
+    setIsPostEditor(false);
+    setIsDraftsPage(false);
+    setEditorDraft(null);
+  };
+
+  /*
+   * Open post editor.
    */
   const openEditor = (draft = null) => {
     setEditorDraft(draft);
@@ -134,10 +149,11 @@ function App() {
     setIsPostEditor(true);
     setIsDraftsPage(false);
     setIsAdmin(false);
+    setShowAdminLogin(false);
   };
 
   /*
-   * Search public posts
+   * Search public posts.
    */
   const visiblePosts = useMemo(() => {
     return posts.filter((post) =>
@@ -145,23 +161,28 @@ function App() {
         post.category || ""
       }`
         .toLowerCase()
-        .includes(query.toLowerCase()),
+        .includes(query.toLowerCase())
     );
   }, [posts, query]);
 
   /*
+   * =====================================================
    * ADMIN LOGIN
+   * =====================================================
    */
-  if (showAdminLogin) {
+  if (
+    showAdminLogin &&
+    !isAdmin &&
+    !isPostEditor &&
+    !isDraftsPage
+  ) {
     return (
       <AdminLogin
         onLogin={() => {
           setShowAdminLogin(false);
           setIsAdmin(true);
         }}
-        onBack={() => {
-          setShowAdminLogin(false);
-        }}
+        onBack={goHome}
         darkMode={darkMode}
         onToggleTheme={() =>
           setDarkMode(!darkMode)
@@ -171,14 +192,14 @@ function App() {
   }
 
   /*
+   * =====================================================
    * ADMIN DASHBOARD
+   * =====================================================
    */
   if (isAdmin) {
     return (
       <AdminPage
-        onBack={() => {
-          setIsAdmin(false);
-        }}
+        onBack={goHome}
         onNewPost={() => {
           openEditor();
         }}
@@ -187,6 +208,7 @@ function App() {
 
           setIsDraftsPage(true);
           setIsAdmin(false);
+          setShowAdminLogin(false);
         }}
         darkMode={darkMode}
         onToggleTheme={() =>
@@ -197,12 +219,13 @@ function App() {
   }
 
   /*
+   * =====================================================
    * DRAFTS
+   * =====================================================
    */
   if (isDraftsPage) {
     return (
       <DraftsPage
-        drafts={drafts}
         onBack={() => {
           window.location.hash = "";
 
@@ -215,18 +238,6 @@ function App() {
         onEditDraft={(draft) => {
           openEditor(draft);
         }}
-        onDeleteDraft={(id) => {
-          const nextDrafts = drafts.filter(
-            (draft) => draft.id !== id,
-          );
-
-          setDrafts(nextDrafts);
-
-          localStorage.setItem(
-            "blog-drafts",
-            JSON.stringify(nextDrafts),
-          );
-        }}
         darkMode={darkMode}
         onToggleTheme={() =>
           setDarkMode(!darkMode)
@@ -236,13 +247,14 @@ function App() {
   }
 
   /*
+   * =====================================================
    * POST EDITOR
+   * =====================================================
    */
   if (isPostEditor) {
     return (
       <PostPage
         draft={editorDraft}
-        onSaveDraft={saveDraft}
         onBack={() => {
           window.location.hash = "";
 
@@ -259,12 +271,20 @@ function App() {
   }
 
   /*
+   * =====================================================
    * PUBLIC WEBSITE
+   * =====================================================
+   *
+   * Visitors ONLY see this section.
+   *
+   * There is deliberately NO Admin button here.
    */
   return (
     <div
       className={
-        darkMode ? "site dark" : "site"
+        darkMode
+          ? "site dark"
+          : "site"
       }
     >
       <button
@@ -293,7 +313,9 @@ function App() {
 
         <nav
           className={
-            sidebarOpen ? "is-open" : ""
+            sidebarOpen
+              ? "is-open"
+              : ""
           }
         >
           <a
@@ -322,16 +344,6 @@ function App() {
           >
             Newsletter
           </a>
-
-          <button
-            className="admin-link"
-            onClick={() => {
-              setSidebarOpen(false);
-              setShowAdminLogin(true);
-            }}
-          >
-            Admin ↗
-          </button>
         </nav>
 
         <button
@@ -348,6 +360,8 @@ function App() {
       </header>
 
       <main id="top">
+
+        {/* INTRO */}
         <section
           className="intro"
           id="about"
@@ -379,6 +393,7 @@ function App() {
           </div>
         </section>
 
+        {/* WRITING */}
         <section
           className="writing-section"
           id="writing"
@@ -400,7 +415,9 @@ function App() {
               <input
                 value={query}
                 onChange={(event) =>
-                  setQuery(event.target.value)
+                  setQuery(
+                    event.target.value
+                  )
                 }
                 placeholder="Search notes"
                 aria-label="Search notes"
@@ -414,62 +431,76 @@ function App() {
             </p>
           ) : visiblePosts.length ? (
             <div className="posts-grid">
-              {visiblePosts.map((post) => (
-                <article
-                  className="post"
-                  key={post.id}
-                >
-                  {post.coverImage && (
-                    <img
-                      src={post.coverImage}
-                      alt=""
-                    />
-                  )}
+              {visiblePosts.map(
+                (post) => (
+                  <article
+                    className="post"
+                    key={post.id}
+                  >
+                    {post.coverImage && (
+                      <img
+                        src={
+                          post.coverImage
+                        }
+                        alt=""
+                      />
+                    )}
 
-                  <div className="post-info">
-                    <div className="post-meta">
-                      <span>
-                        {post.category}
-                      </span>
+                    <div className="post-info">
 
-                      <span>
-                        {new Date(
-                          post.createdAt,
-                        ).toLocaleDateString()}
-                      </span>
+                      <div className="post-meta">
+                        <span>
+                          {
+                            post.category
+                          }
+                        </span>
+
+                        <span>
+                          {new Date(
+                            post.createdAt
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <h3>
+                        {post.title}
+                      </h3>
+
+                      <p>
+                        {
+                          post.excerpt ||
+                          post.content
+                        }
+                      </p>
+
+                      <div className="post-footer">
+
+                        <span>
+                          {Math.max(
+                            1,
+                            Math.ceil(
+                              (
+                                post.content
+                                  ?.length ||
+                                0
+                              ) / 1200
+                            )
+                          )}{" "}
+                          min read
+                        </span>
+
+                        <button
+                          aria-label={`Read ${post.title}`}
+                        >
+                          Read article{" "}
+                          <b>↗</b>
+                        </button>
+
+                      </div>
                     </div>
-
-                    <h3>
-                      {post.title}
-                    </h3>
-
-                    <p>
-                      {post.excerpt ||
-                        post.content}
-                    </p>
-
-                    <div className="post-footer">
-                      <span>
-                        {Math.max(
-                          1,
-                          Math.ceil(
-                            (post.content
-                              ?.length || 0) /
-                              1200,
-                          ),
-                        )}{" "}
-                        min read
-                      </span>
-
-                      <button
-                        aria-label={`Read ${post.title}`}
-                      >
-                        Read article <b>↗</b>
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                )
+              )}
             </div>
           ) : (
             <p className="empty-state">
@@ -478,6 +509,7 @@ function App() {
           )}
         </section>
 
+        {/* NEWSLETTER */}
         <section
           className="newsletter"
           id="newsletter"
@@ -495,15 +527,17 @@ function App() {
           </div>
 
           <div className="signup">
+
             <p>
-              A short note when I have something
-              worth sharing. No noise, just the
-              good stuff.
+              A short note when I have
+              something worth sharing.
+              No noise, just the good stuff.
             </p>
 
             {subscribed ? (
               <p className="success">
-                You’re on the list. See you soon.
+                You’re on the list.
+                See you soon.
               </p>
             ) : (
               <form
@@ -527,17 +561,20 @@ function App() {
             )}
 
             <small>
-              Unsubscribe anytime. I respect your
-              inbox.
+              Unsubscribe anytime.
+              I respect your inbox.
             </small>
+
           </div>
         </section>
 
+        {/* SOCIAL */}
         <section
           className="social-section"
           id="social"
         >
           <div className="social-intro">
+
             <p className="eyebrow">
               Find me elsewhere
             </p>
@@ -547,9 +584,11 @@ function App() {
               <br />
               <em>hello.</em>
             </h2>
+
           </div>
 
           <div className="social-links">
+
             <a
               href="https://www.instagram.com/"
               target="_blank"
@@ -615,8 +654,10 @@ function App() {
 
               <b>↗</b>
             </a>
+
           </div>
         </section>
+
       </main>
 
       <footer>
@@ -635,3 +676,4 @@ function App() {
 }
 
 export default App;
+
