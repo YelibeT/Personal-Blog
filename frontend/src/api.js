@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8800/api";
+const API_URL = "https://biniyamblog-backend.vercel.app/api";
 
 let accessToken = null;
 
@@ -26,7 +26,6 @@ export const login = async (email, password) => {
     return data;
 };
 
-
 export const refreshAccessToken = async () => {
     const response = await fetch(`${API_URL}/auth/refresh`, {
         method: "POST",
@@ -45,7 +44,6 @@ export const refreshAccessToken = async () => {
     return true;
 };
 
-
 export const logout = async () => {
     await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
@@ -54,7 +52,6 @@ export const logout = async () => {
 
     accessToken = null;
 };
-
 
 export const apiFetch = async (endpoint, options = {}) => {
     const makeRequest = () => {
@@ -75,7 +72,6 @@ export const apiFetch = async (endpoint, options = {}) => {
 
     let response = await makeRequest();
 
-    // Access token expired
     if (response.status === 401) {
         const refreshed = await refreshAccessToken();
 

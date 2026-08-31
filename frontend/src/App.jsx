@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from "react";
 import AdminPage from "./Admin";
 import AdminLogin from "./AdminLogin";
@@ -8,22 +9,19 @@ import PostPage from "./PostPage";
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
-  // Admin state
   const [isAdmin, setIsAdmin] = useState(false);
+
   const [showAdminLogin, setShowAdminLogin] = useState(
     () => window.location.pathname === "/admin"
   );
 
-  // Public site state
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
-  // Public posts
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
 
-  // Admin editor
   const [editorDraft, setEditorDraft] = useState(null);
 
   const [isPostEditor, setIsPostEditor] = useState(
@@ -56,7 +54,10 @@ function App() {
 
         setPosts(data);
       } catch (error) {
-        console.error("Failed to load posts:", error);
+        console.error(
+          "Failed to load posts:",
+          error
+        );
       } finally {
         setPostsLoading(false);
       }
@@ -66,7 +67,7 @@ function App() {
   }, []);
 
   /*
-   * Handle browser navigation.
+   * Handle navigation.
    */
   useEffect(() => {
     const handleRouteChange = () => {
@@ -108,27 +109,11 @@ function App() {
   }, []);
 
   /*
-   * Go to admin login.
-   *
-   * There is intentionally no admin link
-   * visible on the public website.
-   */
-  const openAdminLogin = () => {
-    window.history.pushState({}, "", "/admin");
-    window.location.hash = "";
-
-    setShowAdminLogin(true);
-    setIsAdmin(false);
-    setIsPostEditor(false);
-    setIsDraftsPage(false);
-    setEditorDraft(null);
-  };
-
-  /*
    * Return to public homepage.
    */
   const goHome = () => {
     window.history.pushState({}, "", "/");
+
     window.location.hash = "";
 
     setShowAdminLogin(false);
@@ -139,7 +124,7 @@ function App() {
   };
 
   /*
-   * Open post editor.
+   * Open the post editor.
    */
   const openEditor = (draft = null) => {
     setEditorDraft(draft);
@@ -157,9 +142,9 @@ function App() {
    */
   const visiblePosts = useMemo(() => {
     return posts.filter((post) =>
-      `${post.title || ""} ${post.excerpt || ""} ${
-        post.category || ""
-      }`
+      `${post.title || ""} ${
+        post.excerpt || ""
+      } ${post.category || ""}`
         .toLowerCase()
         .includes(query.toLowerCase())
     );
@@ -204,7 +189,8 @@ function App() {
           openEditor();
         }}
         onDrafts={() => {
-          window.location.hash = "admin/drafts";
+          window.location.hash =
+            "admin/drafts";
 
           setIsDraftsPage(true);
           setIsAdmin(false);
@@ -275,9 +261,9 @@ function App() {
    * PUBLIC WEBSITE
    * =====================================================
    *
-   * Visitors ONLY see this section.
+   * Visitors see ONLY this.
    *
-   * There is deliberately NO Admin button here.
+   * There is intentionally no Admin link here.
    */
   return (
     <div
@@ -354,14 +340,16 @@ function App() {
           aria-label="Toggle color theme"
         >
           <span>
-            {darkMode ? "☼" : "◐"}
+            {darkMode
+              ? "☼"
+              : "◐"}
           </span>
         </button>
       </header>
 
       <main id="top">
 
-        {/* INTRO */}
+        {/* ABOUT / HERO */}
         <section
           className="intro"
           id="about"
@@ -393,7 +381,7 @@ function App() {
           </div>
         </section>
 
-        {/* WRITING */}
+        {/* SELECTED WRITING */}
         <section
           className="writing-section"
           id="writing"
@@ -676,4 +664,3 @@ function App() {
 }
 
 export default App;
-
