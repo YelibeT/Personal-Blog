@@ -23,18 +23,23 @@ model User {
   role         Role     @default(ADMIN)
   createdAt    DateTime @default(now())
 
+  refreshToken String?
+
   posts        Post[]
 }
 
 model Post {
-  id Int @id @default(autoincrement())
-  title String
-  content String
-  published Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  title       String?
+  content     String?
+  category    String   @default("Personal")
+  excerpt     String?
+  coverImage  String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  authorId Int
-  author   User @relation(fields: [authorId], references: [id])
+  authorId    Int
+  author      User     @relation(fields: [authorId], references: [id])
 }
 

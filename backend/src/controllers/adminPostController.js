@@ -1,12 +1,8 @@
 import prisma from "../lib/prisma.js";
 
-// GET all published posts
-export const getPosts = async (req, res) => {
+export const getAdminPosts = async (req, res) => {
     try {
         const posts = await prisma.post.findMany({
-            where: {
-                published: true
-            },
             orderBy: {
                 createdAt: "desc"
             }
@@ -23,15 +19,14 @@ export const getPosts = async (req, res) => {
     }
 };
 
-// GET one published post
-export const getPost = async (req, res) => {
+
+export const getAdminPost = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const post = await prisma.post.findFirst({
+        const post = await prisma.post.findUnique({
             where: {
-                id: parseInt(id),
-                published: true
+                id: parseInt(id)
             }
         });
 
@@ -52,14 +47,21 @@ export const getPost = async (req, res) => {
     }
 };
 
-// CREATE post - Admin only
-export const createPost = async (req, res) => {
+
+export const createAdminPost = async (req, res) => {
     try {
-        const { title, content, category, excerpt, published } = req.body;
+        const {
+            title,
+            content,
+            category,
+            excerpt,
+            coverImage,
+            published
+        } = req.body;
 
         if (!title || !content) {
             return res.status(400).json({
-                error: "Title and content are required."
+                error: "Title and content are required"
             });
         }
 
@@ -67,29 +69,48 @@ export const createPost = async (req, res) => {
             data: {
                 title,
                 content,
-                published,
+                category: category || "Personal",
+                excerpt: excerpt || null,
+                coverImage: coverImage || null,
+                published: published || false,
                 authorId: req.user.userId
             }
         });
 
         res.status(201).json(post);
+
     } catch (error) {
         console.error(error);
+
         res.status(500).json({
             error: "Failed to create post"
         });
     }
 };
 
-// UPDATE post - Admin only
-export const updatePost = async (req, res) => {
+
+export const updateAdminPost = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, content } = req.body;
 
-        if (!title || !content) {
-            return res.status(400).json({
-                error: "Title and content are required."
+        const {
+            title,
+            content,
+            category,
+            excerpt,
+            coverImage,
+            published
+        } = req.body;
+
+        const existingPost = await prisma.post.findUnique({
+            where: {
+                id: parseInt(id)
+            }
+        });
+
+        if (!existingPost) {
+            return res.status(404).json({
+                error: "Post not found"
             });
         }
 
@@ -99,19 +120,18 @@ export const updatePost = async (req, res) => {
             },
             data: {
                 title,
-                content
+                content,
+                category,
+                excerpt,
+                coverImage,
+                published
             }
         });
 
         res.status(200).json(post);
+
     } catch (error) {
         console.error(error);
-
-        if (error.code === "P2025") {
-            return res.status(404).json({
-                error: "Post not found"
-            });
-        }
 
         res.status(500).json({
             error: "Failed to update post"
@@ -119,45 +139,22 @@ export const updatePost = async (req, res) => {
     }
 };
 
-// PUBLISH / UNPUBLISH post - Admin only
-export const publishPost = async (req, res) => {
+
+export const deleteAdminPost = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const post = await prisma.post.findUnique({
+        const existingPost = await prisma.post.findUnique({
             where: {
                 id: parseInt(id)
             }
         });
 
-        if (!post) {
+        if (!existingPost) {
             return res.status(404).json({
                 error: "Post not found"
             });
         }
-
-        const updatedPost = await prisma.post.update({
-            where: {
-                id: parseInt(id)
-            },
-            data: {
-                published: !post.published
-            }
-        });
-
-        res.status(200).json(updatedPost);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            error: "Failed to change post publication status"
-        });
-    }
-};
-
-// DELETE post - Admin only
-export const deletePost = async (req, res) => {
-    try {
-        const { id } = req.params;
 
         await prisma.post.delete({
             where: {
@@ -168,14 +165,9 @@ export const deletePost = async (req, res) => {
         res.status(200).json({
             message: "Post deleted successfully"
         });
+
     } catch (error) {
         console.error(error);
-
-        if (error.code === "P2025") {
-            return res.status(404).json({
-                error: "Post not found"
-            });
-        }
 
         res.status(500).json({
             error: "Failed to delete post"
