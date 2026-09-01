@@ -1439,3 +1439,81 @@ footer i {
     box-shadow: 3px 3px 0 var(--accent);
   }
 }
+
+/* Profile and Settings Forms */
+.admin-panel-full {
+  width: 100%;
+}
+
+.profile-form {
+  max-width: 600px;
+  margin-top: 30px;
+}
+
+.form-section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 28px;
+  margin-bottom: 24px;
+  border-radius: 4px;
+}
+
+.form-section h2 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: var(--ink);
+  font-family: "Playfair Display", serif;
+}
+
+.form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  border-radius: 3px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.form-actions .primary-action {
+  padding: 12px 24px;
+}
+
+.form-actions .primary-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
