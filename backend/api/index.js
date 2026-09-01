@@ -1,11 +1,5 @@
-import express from "express";
-
-const app = express();
-
-app.get("/api/health", (req, res) => {
+export default function handler(req, res) {
   res.status(200).json({
-    message: "API is working"
+    message: "Vercel function works"
   });
-});
-
-export default app;
+}
