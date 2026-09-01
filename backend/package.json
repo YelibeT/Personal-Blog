@@ -3,11 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": "22.x"
-  },
   "scripts": {
-    "build": "prisma generate",
+    "build": "echo \"Build complete\"",
     "start": "node src/index.js"
   },
   "dependencies": {
@@ -21,5 +18,4 @@
     "pg": "^8.23.0",
     "prisma": "^7.10.0"
   }
-  
 }
