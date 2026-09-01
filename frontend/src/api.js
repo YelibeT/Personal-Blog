@@ -1,4 +1,4 @@
-const API_URL = "https://biniyamblog-backend.vercel.app/api";
+const API_URL = "https://biniyamblog.vercel.app/api";
 
 let accessToken = null;
 
