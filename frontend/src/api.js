@@ -1,4 +1,4 @@
-const API_URL = "/api";
+const API_URL = "https://personal-blog-gtr2-kf738ad0d-yelibets-projects.vercel.app/api";
 
 let accessToken = null;
 
