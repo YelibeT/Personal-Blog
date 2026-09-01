@@ -7,6 +7,7 @@ generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
 }
+
 datasource db {
   provider = "postgresql"
 }
@@ -30,8 +31,8 @@ model User {
 
 model Post {
   id          Int      @id @default(autoincrement())
-  title       String?
-  content     String?
+  title       String
+  content     String
   category    String   @default("Personal")
   excerpt     String?
   coverImage  String?
@@ -42,4 +43,3 @@ model Post {
   authorId    Int
   author      User     @relation(fields: [authorId], references: [id])
 }
-
