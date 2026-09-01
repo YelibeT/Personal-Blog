@@ -1,3 +1,11 @@
-import app from "../src/server.js";
+import express from "express";
+
+const app = express();
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    message: "API is working"
+  });
+});
 
 export default app;
