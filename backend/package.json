@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build"
+    "build": "cd frontend && npm install && npm run build",
+    "start": "node src/server.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
