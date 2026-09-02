@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://biniyamblog.vercel.app",
+      "https://personal-blog-jade-nine.vercel.app/",
     ],
     credentials: true,
   })
@@ -25,6 +25,10 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/admin/posts", adminPostRoutes);
+
+app.get("/", (req, res) => {
+  res.status(204).end();
+});
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
