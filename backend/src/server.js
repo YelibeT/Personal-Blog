@@ -16,7 +16,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://personal-blog-jade-nine.vercel.app/",
+      "https://biniyamblog.vercel.app",
     ],
     credentials: true,
   })
