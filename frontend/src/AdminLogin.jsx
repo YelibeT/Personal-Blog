@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "./api";
+import { login } from "./services/api";
 
 function AdminLogin({ onLogin, onBack, darkMode, onToggleTheme }) {
   const [email, setEmail] = useState("");

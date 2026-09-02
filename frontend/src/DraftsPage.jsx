@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiFetch } from "./api";
+import { apiFetch } from "./services/api";
 
 function DraftsPage({
   onBack,
