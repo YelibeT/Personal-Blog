@@ -94,6 +94,16 @@ function ProfilePage({ onLogout }) {
     }
   };
 
+  const verifyLogout = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to log out?"
+    );
+
+    if (confirmed) {
+      onLogout();
+    }
+  };
+
   if (loading) {
     return <main className="admin-main"><div className="empty-admin"><strong>Loading profile...</strong></div></main>;
   }
@@ -182,7 +192,7 @@ function ProfilePage({ onLogout }) {
 
       <section className="profile-account-actions">
         <h2>Account access</h2>
-        <button className="quiet-action delete-action" type="button" onClick={onLogout}>Log out</button>
+        <button className="quiet-action delete-action" type="button" onClick={verifyLogout}>Log out</button>
       </section>
     </main>
   );
