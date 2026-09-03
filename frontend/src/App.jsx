@@ -15,39 +15,23 @@ import {
   refreshAccessToken
 } from "./services/api";
 
-function Home({ darkMode, onToggleTheme }) {
+function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
-  const [posts, setPosts] = useState([]);
-  const [postsLoading, setPostsLoading] = useState(true);
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  /*
-   * Load published posts for the public website.
-   */
   useEffect(() => {
-    const loadPublicPosts = async () => {
-      try {
-        setPostsLoading(true);
+    if (!location.hash) {
+      return;
+    }
 
-        setPosts(await fetchPublishedPosts());
-      } catch (error) {
-        console.error(
-          "Failed to load posts:",
-          error
-        );
-      } finally {
-        setPostsLoading(false);
-      }
-    };
-
-    loadPublicPosts();
-  }, []);
+    const section = document.getElementById(location.hash.slice(1));
+    section?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [location.hash]);
 
   /*
    * Search public posts.
@@ -110,6 +94,13 @@ function Home({ darkMode, onToggleTheme }) {
               : ""
           }
         >
+          <Link
+            to="/"
+            onClick={() => setSidebarOpen(false)}
+          >
+            Home
+          </Link>
+
           <Link
             to="/#writing"
             onClick={() =>
@@ -508,7 +499,7 @@ function AdminLoginRoute({ isAdmin, authReady, onLogin, darkMode, onToggleTheme 
   );
 }
 
-function AdminContent({ onLogout }) {
+function AdminContent({ onLogout, onPostSaved, onPostDeleted }) {
   const navigate = useNavigate();
   const location = useLocation();
   const draft = location.state?.draft || null;
@@ -523,15 +514,15 @@ function AdminContent({ onLogout }) {
           <Admin
             onNewPost={openNewPost}
             onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })}
-            onPostDeleted={() => {}}
+            onPostDeleted={onPostDeleted}
             onDrafts={() => navigate("/admin/drafts")}
           />
         }
       />
-      <Route path="dashboard" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
-      <Route path="posts" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
+      <Route path="dashboard" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={onPostDeleted} onDrafts={() => navigate("/admin/drafts")} />} />
+      <Route path="posts" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={onPostDeleted} onDrafts={() => navigate("/admin/drafts")} />} />
       <Route path="drafts" element={<DraftsPage onBack={() => navigate("/admin")} onNewPost={openNewPost} onEditDraft={(post) => navigate("/admin/new-post", { state: { draft: post } })} />} />
-      <Route path="new-post" element={<PostPage draft={draft} onPostSaved={() => {}} onBack={() => navigate("/admin")} />} />
+      <Route path="new-post" element={<PostPage draft={draft} onPostSaved={onPostSaved} onBack={() => navigate("/admin")} />} />
       <Route path="settings" element={<Admin initialTab="settings" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
       <Route path="profile" element={<ProfilePage onLogout={onLogout} />} />
     </Routes>
@@ -541,7 +532,7 @@ function AdminContent({ onLogout }) {
 function ArticleRoute({ darkMode, onToggleTheme }) {
   return (
     <>
-      <Home darkMode={darkMode} onToggleTheme={onToggleTheme} />
+      <Home darkMode={darkMode} onToggleTheme={onToggleTheme} posts={[]} postsLoading={false} />
       <ArticlePage darkMode={darkMode} onToggleTheme={onToggleTheme} />
     </>
   );
@@ -551,6 +542,8 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const backgroundLocation = location.state?.backgroundLocation;
@@ -561,6 +554,24 @@ function App() {
       .catch(() => setIsAdmin(false))
       .finally(() => setAuthReady(true));
   }, []);
+
+  useEffect(() => {
+    fetchPublishedPosts()
+      .then(setPosts)
+      .catch((error) => console.error("Failed to load posts:", error))
+      .finally(() => setPostsLoading(false));
+  }, []);
+
+  const handlePostSaved = (savedPost) => {
+    setPosts((currentPosts) => {
+      const remainingPosts = currentPosts.filter((post) => post.id !== savedPost.id);
+      return savedPost.published ? [savedPost, ...remainingPosts] : remainingPosts;
+    });
+  };
+
+  const handlePostDeleted = (postId) => {
+    setPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
+  };
 
   const handleLogout = async () => {
     try {
@@ -574,8 +585,8 @@ function App() {
   return (
     <>
       <Routes location={backgroundLocation || location}>
-      <Route path="/" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
-      <Route path="/about" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
+      <Route path="/" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
+      <Route path="/about" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
       <Route path="/post/:id" element={<ArticleRoute darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
       <Route
         path="/admin"
@@ -583,7 +594,7 @@ function App() {
       />
       <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
         <Route element={<AdminLayout darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
-          <Route path="/admin/*" element={<AdminContent onLogout={handleLogout} />} />
+          <Route path="/admin/*" element={<AdminContent onLogout={handleLogout} onPostSaved={handlePostSaved} onPostDeleted={handlePostDeleted} />} />
         </Route>
       </Route>
       </Routes>
