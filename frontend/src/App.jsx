@@ -26,6 +26,7 @@ function App() {
   const [postsLoading, setPostsLoading] = useState(true);
 
   const [editorDraft, setEditorDraft] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
 
   const [isPostEditor, setIsPostEditor] = useState(
     () => window.location.hash === "#admin/new-post"
@@ -68,6 +69,24 @@ function App() {
 
     loadPublicPosts();
   }, []);
+
+  useEffect(() => {
+    if (!selectedPost) {
+      return undefined;
+    }
+
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setSelectedPost(null);
+      }
+    };
+
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [selectedPost]);
 
   /*
    * Handle navigation.
@@ -137,6 +156,24 @@ function App() {
     setShowAdminLogin(false);
   };
 
+  const handlePostSaved = (savedPost) => {
+    setPosts((currentPosts) => {
+      const withoutSavedPost = currentPosts.filter(
+        (post) => post.id !== savedPost.id
+      );
+
+      return savedPost.published
+        ? [savedPost, ...withoutSavedPost]
+        : withoutSavedPost;
+    });
+  };
+
+  const handlePostDeleted = (postId) => {
+    setPosts((currentPosts) =>
+      currentPosts.filter((post) => post.id !== postId)
+    );
+  };
+
   /*
    * Search public posts.
    */
@@ -188,6 +225,10 @@ function App() {
         onNewPost={() => {
           openEditor();
         }}
+        onEditPost={(post) => {
+          openEditor(post);
+        }}
+        onPostDeleted={handlePostDeleted}
         onDrafts={() => {
           window.location.hash =
             "admin/drafts";
@@ -241,6 +282,7 @@ function App() {
     return (
       <PostPage
         draft={editorDraft}
+        onPostSaved={handlePostSaved}
         onBack={() => {
           window.location.hash = "";
 
@@ -478,6 +520,10 @@ function App() {
                         </span>
 
                         <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedPost(post)
+                          }
                           aria-label={`Read ${post.title}`}
                         >
                           Read article{" "}
@@ -659,6 +705,79 @@ function App() {
           </a>
         </div>
       </footer>
+
+      {selectedPost && (
+        <div
+          className="article-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="article-title"
+          onClick={() => setSelectedPost(null)}
+        >
+          <article
+            className="article-reader"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="article-close"
+              type="button"
+              onClick={() => setSelectedPost(null)}
+              aria-label="Close article"
+            >
+              ×
+            </button>
+
+            <div className="article-reader-content">
+              <div className="article-heading">
+                <div className="post-meta">
+                  <span>{selectedPost.category}</span>
+                  <span>
+                    {new Date(
+                      selectedPost.createdAt
+                    ).toLocaleDateString()}
+                  </span>
+                </div>
+
+                <h1 id="article-title">
+                  {selectedPost.title}
+                </h1>
+
+                <p className="article-lede">
+                  {selectedPost.excerpt || ""}
+                </p>
+
+                <span className="article-read">
+                  {Math.max(
+                    1,
+                    Math.ceil(
+                      (selectedPost.content?.length || 0) / 1200
+                    )
+                  )} min read
+                </span>
+              </div>
+
+              {selectedPost.coverImage && (
+                <img
+                  className="article-image"
+                  src={selectedPost.coverImage}
+                  alt=""
+                />
+              )}
+
+              <div className="article-body">
+                {(selectedPost.content || "")
+                  .split(/\n\s*\n/)
+                  .filter(Boolean)
+                  .map((paragraph, index) => (
+                    <p key={`${selectedPost.id}-${index}`}>
+                      {paragraph}
+                    </p>
+                  ))}
+              </div>
+            </div>
+          </article>
+        </div>
+      )}
     </div>
   );
 }

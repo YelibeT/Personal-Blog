@@ -4,6 +4,8 @@ import { apiFetch } from "./services/api";
 function AdminPage({
   onBack,
   onNewPost,
+  onEditPost,
+  onPostDeleted,
   onDrafts,
   darkMode,
   onToggleTheme
@@ -88,6 +90,35 @@ function AdminPage({
       alert("Failed to save profile");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeletePost = async (post) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${post.title || "Untitled post"}"?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await apiFetch(`/admin/posts/${post.id}`, {
+        method: "DELETE"
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete post");
+      }
+
+      setPosts((currentPosts) =>
+        currentPosts.filter((currentPost) => currentPost.id !== post.id)
+      );
+      onPostDeleted(post.id);
+    } catch (error) {
+      console.error(error);
+      setError(error.message);
     }
   };
 
@@ -267,11 +298,27 @@ function AdminPage({
                           </p>
                         </div>
 
-                        <span>
-                          {post.published
-                            ? "Published"
-                            : "Draft"}
-                        </span>
+                        <div className="admin-post-row-actions">
+                          <span>
+                            {post.published
+                              ? "Published"
+                              : "Draft"}
+                          </span>
+
+                          <button
+                            className="quiet-action"
+                            onClick={() => onEditPost(post)}
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            className="quiet-action delete-action"
+                            onClick={() => handleDeletePost(post)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </article>
                     ))}
                   </div>

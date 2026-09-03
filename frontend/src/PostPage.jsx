@@ -3,6 +3,7 @@ import { apiFetch } from "./services/api";
 
 function PostPage({
   draft,
+  onPostSaved,
   onBack,
   darkMode,
   onToggleTheme
@@ -95,6 +96,8 @@ function PostPage({
           "Failed to save post"
         );
       }
+
+      onPostSaved(data);
 
       setSaveStatus(
         published

@@ -915,6 +915,55 @@ footer i {
   margin: 0 0 28px;
 }
 
+.article-overlay {
+  align-items: center;
+  background: rgba(20, 25, 24, 0.62);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 20;
+}
+
+.article-reader {
+  background: var(--card);
+  box-shadow: 0 22px 70px rgba(20, 25, 24, 0.28);
+  max-height: min(900px, calc(100vh - 48px));
+  overflow-y: auto;
+  position: relative;
+  width: min(960px, 100%);
+}
+
+.article-reader-content {
+  padding: 64px 72px 78px;
+}
+
+.article-reader .article-heading {
+  margin: 0 auto 48px;
+}
+
+.article-reader .article-heading h1 {
+  font-size: clamp(44px, 6vw, 76px);
+}
+
+.article-close {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 32px;
+  line-height: 1;
+  padding: 8px;
+  position: absolute;
+  right: 22px;
+  top: 18px;
+}
+
+.article-close:hover {
+  color: var(--ink);
+}
+
 .post-editor-page {
   padding-top: 62px;
   padding-bottom: 105px;
@@ -1049,6 +1098,37 @@ footer i {
 
 .editor-submit {
   width: 100%;
+}
+
+.admin-post-row {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.admin-post-row > div:first-child {
+  min-width: 0;
+}
+
+.admin-post-row h3 {
+  font-size: 20px;
+  margin: 7px 0 5px;
+}
+
+.admin-post-row p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0;
+}
+
+.admin-post-row-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
 }
 
 .drafts-page .back-link {
@@ -1359,6 +1439,19 @@ footer i {
     font-size: 18px;
   }
 
+  .article-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .article-reader {
+    max-height: calc(100vh - 24px);
+  }
+
+  .article-reader-content {
+    padding: 54px 24px 48px;
+  }
+
   .post-editor-page {
     padding-top: 42px;
     padding-bottom: 65px;
@@ -1388,6 +1481,16 @@ footer i {
     align-items: start;
     flex-direction: column;
     gap: 18px;
+  }
+
+  .admin-post-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .admin-post-row-actions {
+    width: 100%;
   }
 
   .draft-row-actions {
