@@ -28,6 +28,9 @@ function AdminLayout({ onLogout, darkMode, onToggleTheme }) {
           <NavLink className={navClass} to="/admin/new-post">
             New post
           </NavLink>
+          <NavLink className={navClass} to="/admin/profile">
+            Profile
+          </NavLink>
           <Link to="/">View site</Link>
           <button onClick={onLogout}>Log out</button>
         </nav>

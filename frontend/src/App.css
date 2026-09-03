@@ -916,6 +916,12 @@ footer i {
 }
 
 .article-overlay {
+  --ink: #302d2b;
+  --muted: #77716b;
+  --line: #d9d2c9;
+  --paper: #f5f1eb;
+  --card: #ebe5dc;
+  --accent: #e7624f;
   align-items: center;
   background: rgba(20, 25, 24, 0.62);
   display: flex;
@@ -924,6 +930,15 @@ footer i {
   padding: 24px;
   position: fixed;
   z-index: 20;
+}
+
+.article-overlay.dark {
+  --ink: #eee6dc;
+  --muted: #afa49b;
+  --line: #4c4540;
+  --paper: #252321;
+  --card: #373330;
+  --accent: #ed7b67;
 }
 
 .article-reader {
@@ -962,6 +977,12 @@ footer i {
 
 .article-close:hover {
   color: var(--ink);
+}
+
+.article-theme-toggle {
+  position: absolute;
+  right: 72px;
+  top: 22px;
 }
 
 .post-editor-page {
@@ -1452,6 +1473,10 @@ footer i {
     padding: 54px 24px 48px;
   }
 
+  .article-theme-toggle {
+    right: 58px;
+  }
+
   .post-editor-page {
     padding-top: 42px;
     padding-bottom: 65px;
@@ -1572,6 +1597,106 @@ footer i {
   margin-bottom: 18px;
   display: flex;
   flex-direction: column;
+}
+
+.form-group > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.form-group small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.profile-picture-wrap {
+  margin-bottom: 26px;
+}
+
+.profile-picture {
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  display: block;
+  height: 112px;
+  object-fit: cover;
+  width: 112px;
+}
+
+.profile-picture-placeholder {
+  align-items: center;
+  background: var(--paper);
+  color: var(--accent);
+  display: flex;
+  font-family: "Playfair Display", serif;
+  font-size: 48px;
+  justify-content: center;
+}
+
+.profile-account-details {
+  margin: 0;
+}
+
+.profile-account-details div {
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 12px 0;
+}
+
+.profile-account-details div:last-child {
+  border-bottom: 0;
+}
+
+.profile-account-details dt,
+.profile-account-details dd {
+  margin: 0;
+}
+
+.profile-account-details dt {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.profile-account-details dd {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.profile-feedback {
+  margin-top: 20px;
+  min-height: auto;
+  padding: 16px 20px;
+}
+
+.profile-feedback.error strong {
+  color: #b65d52;
+}
+
+.profile-security {
+  border-top: 1px solid var(--line);
+  margin-top: 34px;
+  padding-top: 34px;
+}
+
+.profile-account-actions {
+  border-top: 1px solid var(--line);
+  margin-top: 34px;
+  max-width: 600px;
+  padding: 30px 0 70px;
+}
+
+.profile-account-actions h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  margin: 0 0 18px;
 }
 
 .form-group label {

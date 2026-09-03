@@ -26,6 +26,10 @@ model User {
 
   refreshToken String?
 
+  displayName  String?
+  bio          String?
+  profileImage String?
+
   posts        Post[]
 }
 

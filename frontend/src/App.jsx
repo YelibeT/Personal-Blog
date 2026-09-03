@@ -8,14 +8,14 @@ import AdminLayout from "./AdminLayout";
 import AdminLogin from "./AdminLogin";
 import DraftsPage from "./DraftsPage";
 import PostPage from "./PostPage";
+import ProfilePage from "./ProfilePage";
 import {
   fetchPublishedPosts,
   logout,
   refreshAccessToken
 } from "./services/api";
 
-function Home() {
-  const [darkMode, setDarkMode] = useState(false);
+function Home({ darkMode, onToggleTheme }) {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -25,6 +25,7 @@ function Home() {
   const [postsLoading, setPostsLoading] = useState(true);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   /*
    * Load published posts for the public website.
@@ -140,7 +141,7 @@ function Home() {
         <button
           className="theme-toggle"
           onClick={() =>
-            setDarkMode(!darkMode)
+            onToggleTheme()
           }
           aria-label="Toggle color theme"
         >
@@ -285,7 +286,9 @@ function Home() {
                         <button
                           type="button"
                           onClick={() =>
-                            navigate(`/post/${post.id}`)
+                            navigate(`/post/${post.id}`, {
+                              state: { backgroundLocation: location }
+                            })
                           }
                           aria-label={`Read ${post.title}`}
                         >
@@ -505,7 +508,7 @@ function AdminLoginRoute({ isAdmin, authReady, onLogin, darkMode, onToggleTheme 
   );
 }
 
-function AdminContent() {
+function AdminContent({ onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
   const draft = location.state?.draft || null;
@@ -531,7 +534,17 @@ function AdminContent() {
       <Route path="new-post" element={<PostPage draft={draft} onPostSaved={() => {}} onBack={() => navigate("/admin")} />} />
       <Route path="profile" element={<Admin initialTab="profile" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
       <Route path="settings" element={<Admin initialTab="settings" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
+      <Route path="profile" element={<ProfilePage onLogout={onLogout} />} />
     </Routes>
+  );
+}
+
+function ArticleRoute({ darkMode, onToggleTheme }) {
+  return (
+    <>
+      <Home darkMode={darkMode} onToggleTheme={onToggleTheme} />
+      <ArticlePage darkMode={darkMode} onToggleTheme={onToggleTheme} />
+    </>
   );
 }
 
@@ -540,6 +553,8 @@ function App() {
   const [authReady, setAuthReady] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const backgroundLocation = location.state?.backgroundLocation;
 
   useEffect(() => {
     refreshAccessToken()
@@ -558,20 +573,35 @@ function App() {
   };
 
   return (
-    <Routes>
-      <Route path="/*" element={<Home />} />
-      <Route path="/post/:id" element={<ArticlePage />} />
+    <>
+      <Routes location={backgroundLocation || location}>
+      <Route path="/" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
+      <Route path="/about" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
+      <Route path="/post/:id" element={<ArticleRoute darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
       <Route
         path="/admin"
         element={<AdminLoginRoute isAdmin={isAdmin} authReady={authReady} onLogin={() => setIsAdmin(true)} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}
       />
-      <Route path="/about" element={<Home />} />
       <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
         <Route element={<AdminLayout onLogout={handleLogout} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
-          <Route path="/admin/*" element={<AdminContent />} />
+          <Route path="/admin/*" element={<AdminContent onLogout={handleLogout} />} />
         </Route>
       </Route>
-    </Routes>
+      </Routes>
+      {backgroundLocation && (
+        <Routes>
+          <Route
+            path="/post/:id"
+            element={
+              <ArticlePage
+                darkMode={darkMode}
+                onToggleTheme={() => setDarkMode(!darkMode)}
+              />
+            }
+          />
+        </Routes>
+      )}
+    </>
   );
 }
 
