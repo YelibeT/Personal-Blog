@@ -15,6 +15,25 @@ import {
   refreshAccessToken
 } from "./services/api";
 
+const stripPostFormatting = (value = "") =>
+  value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/(^|\s)#{1,6}\s*/g, "$1")
+    .replace(/[*_`>~]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getPostPreview = (post) => {
+  const source = post.excerpt?.trim() || post.content || "";
+  const preview = stripPostFormatting(source);
+
+  return preview.length > 120
+    ? `${preview.slice(0, 117).trimEnd()}...`
+    : preview;
+};
+
 function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -252,10 +271,7 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
                       </h3>
 
                       <p>
-                        {
-                          post.excerpt ||
-                          post.content
-                        }
+                        {getPostPreview(post)}
                       </p>
 
                       <div className="post-footer">
