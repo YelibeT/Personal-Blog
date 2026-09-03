@@ -124,6 +124,11 @@ function PostPage({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (!title.trim() || !excerpt.trim() || !body.trim()) {
+      setSaveStatus("Title, description, and story are required.");
+      return;
+    }
+
     const action =
       event.nativeEvent
         .submitter?.value;
@@ -173,6 +178,7 @@ function PostPage({
 
               <input
                 value={title}
+                required
                 onChange={(event) =>
                   setTitle(event.target.value)
                 }
@@ -185,6 +191,7 @@ function PostPage({
 
               <textarea
                 value={excerpt}
+                required
                 onChange={(event) =>
                   setExcerpt(event.target.value)
                 }
@@ -199,6 +206,7 @@ function PostPage({
               <textarea
                 className="story-input"
                 value={body}
+                required
                 onChange={(event) =>
                   setBody(event.target.value)
                 }

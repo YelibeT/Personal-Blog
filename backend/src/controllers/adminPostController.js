@@ -63,12 +63,18 @@ export const createAdminPost = async (req, res) => {
       published
     } = req.body;
 
+    if (!title?.trim() || !excerpt?.trim() || !content?.trim()) {
+      return res.status(400).json({
+        error: "Title, description, and story are required"
+      });
+    }
+
     const post = await prisma.post.create({
       data: {
-        title: title?.trim() || null,
-        content: content?.trim() || null,
+        title: title.trim(),
+        content: content.trim(),
         category: category?.trim() || "Personal",
-        excerpt: excerpt?.trim() || null,
+        excerpt: excerpt.trim(),
         coverImage: coverImage || null,
         published: published === true,
         authorId: req.user.userId
@@ -105,6 +111,12 @@ export const updateAdminPost = async (req, res) => {
       published
     } = req.body;
 
+    if (!title?.trim() || !excerpt?.trim() || !content?.trim()) {
+      return res.status(400).json({
+        error: "Title, description, and story are required"
+      });
+    }
+
     const existingPost = await prisma.post.findUnique({
       where: {
         id
@@ -122,10 +134,10 @@ export const updateAdminPost = async (req, res) => {
         id
       },
       data: {
-        title: title?.trim() || null,
-        content: content?.trim() || null,
+        title: title.trim(),
+        content: content.trim(),
         category: category?.trim() || "Personal",
-        excerpt: excerpt?.trim() || null,
+        excerpt: excerpt.trim(),
         coverImage: coverImage || null,
         published: published === true
       }
