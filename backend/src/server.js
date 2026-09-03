@@ -14,11 +14,15 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://personal-blog-jade-nine.vercel.app/",
-    ],
-    credentials: true,
+    origin: (origin, callback) => {
+      const isAllowed =
+        !origin ||
+        origin === "http://localhost:5173" ||
+        /^https:\/\/personal-blog-[a-z0-9-]+\.vercel\.app$/.test(origin);
+
+      callback(null, isAllowed);
+    },
+    credentials: true
   })
 );
 
