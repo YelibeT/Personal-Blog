@@ -55,12 +55,25 @@ export const getPost = async (req, res) => {
 // CREATE post - Admin only
 export const createPost = async (req, res) => {
     try {
-        const { title, content, category, excerpt, published } = req.body;
+        const {
+            title,
+            content,
+            category,
+            excerpt,
+            coverImage,
+            published
+        } = req.body;
+
+        if (!title || !content) {
+            return res.status(400).json({
+                error: "Title and content are required."
+            });
+        }
 
         const post = await prisma.post.create({
             data: {
-                title: title || null,
-                content: content || null,
+                title,
+                content,
                 category: category || "Personal",
                 excerpt: excerpt || null,
                 coverImage: coverImage || null,
@@ -70,8 +83,10 @@ export const createPost = async (req, res) => {
         });
 
         res.status(201).json(post);
+
     } catch (error) {
         console.error(error);
+
         res.status(500).json({
             error: "Failed to create post"
         });
