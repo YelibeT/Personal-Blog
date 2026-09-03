@@ -11,21 +11,12 @@ function AdminPage({
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState(initialTab); // dashboard, profile, settings
+  const [activeTab, setActiveTab] = useState(initialTab); // dashboard or settings
   const [profileData, setProfileData] = useState({
     siteName: "Biniyam Abebe",
-    siteDescription: "Independent Writer & Med-Student",
-    introText: "I'm Biniyam,",
-    aboutText: "Your about section goes here.",
-    email: "contact@example.com",
     newsletter: {
       description: "Get my latest writing delivered to your inbox.",
       subscribers: 248
-    },
-    socialLinks: {
-      twitter: "",
-      github: "",
-      linkedin: ""
     },
     homepage: {
       heroHeading: "Heading",
@@ -57,13 +48,6 @@ function AdminPage({
 
     loadPosts();
   }, []);
-
-  const handleProfileChange = (field, value) => {
-    setProfileData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
   const handleNestedChange = (parent, field, value) => {
     setProfileData(prev => ({
@@ -332,111 +316,6 @@ function AdminPage({
               </section>
             </div>
           </>
-        )}
-
-        {/* PROFILE TAB */}
-        {activeTab === "profile" && (
-          <div className="admin-panel-full">
-            <div className="admin-heading">
-              <div>
-                <p className="eyebrow">Manage Your Profile</p>
-                <h1>Profile Settings</h1>
-                <p className="admin-subtitle">
-                  Update your personal information and how you appear across the site.
-                </p>
-              </div>
-            </div>
-
-            <div className="profile-form">
-              <div className="form-section">
-                <h2>Personal Information</h2>
-                
-                <div className="form-group">
-                  <label>Site Name / Display Name</label>
-                  <input
-                    type="text"
-                    value={profileData.siteName}
-                    onChange={(e) => handleProfileChange("siteName", e.target.value)}
-                    placeholder="Your name"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Site Description / Tagline</label>
-                  <input
-                    type="text"
-                    value={profileData.siteDescription}
-                    onChange={(e) => handleProfileChange("siteDescription", e.target.value)}
-                    placeholder="e.g., Independent Writer & Med-Student"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Email Address</label>
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => handleProfileChange("email", e.target.value)}
-                    placeholder="your@email.com"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Bio / About Text</label>
-                  <textarea
-                    value={profileData.aboutText}
-                    onChange={(e) => handleProfileChange("aboutText", e.target.value)}
-                    placeholder="Tell visitors about yourself..."
-                    rows="4"
-                  />
-                </div>
-              </div>
-
-              <div className="form-section">
-                <h2>Social Links</h2>
-                
-                <div className="form-group">
-                  <label>Twitter</label>
-                  <input
-                    type="text"
-                    value={profileData.socialLinks.twitter}
-                    onChange={(e) => handleNestedChange("socialLinks", "twitter", e.target.value)}
-                    placeholder="https://twitter.com/yourhandle"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>GitHub</label>
-                  <input
-                    type="text"
-                    value={profileData.socialLinks.github}
-                    onChange={(e) => handleNestedChange("socialLinks", "github", e.target.value)}
-                    placeholder="https://github.com/yourprofile"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>LinkedIn</label>
-                  <input
-                    type="text"
-                    value={profileData.socialLinks.linkedin}
-                    onChange={(e) => handleNestedChange("socialLinks", "linkedin", e.target.value)}
-                    placeholder="https://linkedin.com/in/yourprofile"
-                  />
-                </div>
-              </div>
-
-              <div className="form-actions">
-                <button 
-                  className="primary-action" 
-                  onClick={handleSaveProfile}
-                  disabled={isSaving}
-                >
-                  {isSaving ? "Saving..." : "Save Profile"}
-                </button>
-              </div>
-            </div>
-          </div>
         )}
 
         {/* SETTINGS TAB */}
