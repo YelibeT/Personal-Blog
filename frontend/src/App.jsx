@@ -1,23 +1,21 @@
 
 import { useEffect, useMemo, useState } from "react";
-import AdminPage from "./Admin";
+import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import "./App.css";
+import ArticlePage from "./ArticlePage";
+import Admin from "./Admin";
 import AdminLayout from "./AdminLayout";
 import AdminLogin from "./AdminLogin";
-import "./App.css";
 import DraftsPage from "./DraftsPage";
 import PostPage from "./PostPage";
-import { logout, refreshAccessToken } from "./services/api";
+import {
+  fetchPublishedPosts,
+  logout,
+  refreshAccessToken
+} from "./services/api";
 
-function App() {
+function Home() {
   const [darkMode, setDarkMode] = useState(false);
-
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminChecking, setAdminChecking] = useState(
-    () => window.location.pathname.replace(/\/+$/, "") === "/admin"
-  );
-
-  const isAdminRoute = () =>
-    window.location.pathname.replace(/\/+$/, "") === "/admin";
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -26,40 +24,7 @@ function App() {
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
 
-  const [editorDraft, setEditorDraft] = useState(null);
-  const [selectedPost, setSelectedPost] = useState(null);
-
-  const [isPostEditor, setIsPostEditor] = useState(
-    () => window.location.hash === "#admin/new-post"
-  );
-
-  const [isDraftsPage, setIsDraftsPage] = useState(
-    () => window.location.hash === "#admin/drafts"
-  );
-
-  useEffect(() => {
-    let mounted = true;
-
-    refreshAccessToken()
-      .then((restored) => {
-        if (mounted) {
-          setIsAdmin(restored);
-          if (isAdminRoute()) {
-            setAdminChecking(false);
-          }
-        }
-      })
-      .catch(() => {
-        if (mounted) {
-          setIsAdmin(false);
-          setAdminChecking(false);
-        }
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const navigate = useNavigate();
 
   /*
    * Load published posts for the public website.
@@ -69,19 +34,7 @@ function App() {
       try {
         setPostsLoading(true);
 
-        const response = await fetch(
-          "https://personal-blog-oum3.vercel.app/api/posts"
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.error || "Failed to load posts"
-          );
-        }
-
-        setPosts(data);
+        setPosts(await fetchPublishedPosts());
       } catch (error) {
         console.error(
           "Failed to load posts:",
@@ -94,163 +47,6 @@ function App() {
 
     loadPublicPosts();
   }, []);
-
-  useEffect(() => {
-    if (!selectedPost) {
-      return undefined;
-    }
-
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") {
-        setSelectedPost(null);
-      }
-    };
-
-    document.addEventListener("keydown", closeOnEscape);
-
-    return () => {
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [selectedPost]);
-
-  /*
-   * Handle navigation.
-   */
-  useEffect(() => {
-    const handleRouteChange = () => {
-      const adminRoute = isAdminRoute();
-
-      setIsPostEditor(
-        isAdmin && window.location.hash === "#admin/new-post"
-      );
-
-      setIsDraftsPage(
-        isAdmin && window.location.hash === "#admin/drafts"
-      );
-
-      if (adminRoute && !isAdmin) {
-        setAdminChecking(true);
-      }
-    };
-
-    window.addEventListener(
-      "popstate",
-      handleRouteChange
-    );
-
-    window.addEventListener(
-      "hashchange",
-      handleRouteChange
-    );
-
-    return () => {
-      window.removeEventListener(
-        "popstate",
-        handleRouteChange
-      );
-
-      window.removeEventListener(
-        "hashchange",
-        handleRouteChange
-      );
-    };
-  }, [isAdmin]);
-
-  /*
-   * Return to public homepage.
-   */
-  const goHome = () => {
-    window.history.pushState({}, "", "/");
-
-    window.location.hash = "";
-
-    setIsAdmin(false);
-    setAdminChecking(false);
-    setIsPostEditor(false);
-    setIsDraftsPage(false);
-    setEditorDraft(null);
-  };
-
-  const enterAdmin = () => {
-    window.history.pushState({}, "", "/");
-    window.location.hash = "";
-    setIsAdmin(true);
-    setAdminChecking(false);
-    setIsPostEditor(false);
-    setIsDraftsPage(false);
-    setEditorDraft(null);
-  };
-
-  /*
-   * Open the post editor.
-   */
-  const openEditor = (draft = null) => {
-    setEditorDraft(draft);
-
-    window.location.hash = "admin/new-post";
-
-    setIsPostEditor(true);
-    setIsDraftsPage(false);
-    setIsAdmin(true);
-  };
-
-  const navigateAdmin = (section) => {
-    if (section === "drafts") {
-      window.location.hash = "admin/drafts";
-    } else if (section === "new-post") {
-      openEditor();
-      return;
-    } else if (section === "posts") {
-      window.location.hash = "admin/posts";
-    } else if (section === "profile" || section === "settings") {
-      window.location.hash = `admin/${section}`;
-    } else {
-      window.location.hash = "admin/dashboard";
-    }
-
-    setIsPostEditor(false);
-    setIsDraftsPage(section === "drafts");
-    setIsAdmin(true);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } finally {
-      goHome();
-    }
-  };
-
-  const getAdminSection = () => {
-    const section = window.location.hash.replace("#admin/", "");
-
-    return [
-      "dashboard",
-      "posts",
-      "profile",
-      "settings"
-    ].includes(section)
-      ? section
-      : "dashboard";
-  };
-
-  const handlePostSaved = (savedPost) => {
-    setPosts((currentPosts) => {
-      const withoutSavedPost = currentPosts.filter(
-        (post) => post.id !== savedPost.id
-      );
-
-      return savedPost.published
-        ? [savedPost, ...withoutSavedPost]
-        : withoutSavedPost;
-    });
-  };
-
-  const handlePostDeleted = (postId) => {
-    setPosts((currentPosts) =>
-      currentPosts.filter((post) => post.id !== postId)
-    );
-  };
 
   /*
    * Search public posts.
@@ -265,83 +61,6 @@ function App() {
     );
   }, [posts, query]);
 
-  /*
-   * =====================================================
-   * ADMIN LOGIN
-   * =====================================================
-   */
-  if (adminChecking && isAdminRoute()) {
-    return <div className="site"><main className="admin-main"><p>Restoring admin session...</p></main></div>;
-  }
-
-  if (isAdminRoute() && !isAdmin) {
-    return (
-      <AdminLogin
-        onLogin={() => {
-          enterAdmin();
-        }}
-        onBack={goHome}
-        darkMode={darkMode}
-        onToggleTheme={() =>
-          setDarkMode(!darkMode)
-        }
-      />
-    );
-  }
-
-  /*
-   * =====================================================
-   * ADMIN DASHBOARD
-   * =====================================================
-   */
-  const adminSection = getAdminSection();
-  const hasAdminSection = isAdmin && window.location.hash.startsWith("#admin/");
-
-  if (hasAdminSection) {
-    return (
-      <div className={darkMode ? "site dark" : "site"}>
-        <AdminLayout
-          section={isPostEditor ? "new-post" : isDraftsPage ? "drafts" : adminSection}
-          onNavigate={navigateAdmin}
-          onLogout={handleLogout}
-          darkMode={darkMode}
-          onToggleTheme={() => setDarkMode(!darkMode)}
-        />
-        {isPostEditor ? (
-          <PostPage
-            draft={editorDraft}
-            onPostSaved={handlePostSaved}
-            onBack={() => navigateAdmin("dashboard")}
-          />
-        ) : isDraftsPage ? (
-          <DraftsPage
-            onBack={() => navigateAdmin("dashboard")}
-            onNewPost={() => openEditor()}
-            onEditDraft={(draft) => openEditor(draft)}
-          />
-        ) : (
-          <AdminPage
-            key={getAdminSection()}
-            initialTab={getAdminSection() === "profile" || getAdminSection() === "settings" ? getAdminSection() : "dashboard"}
-            onNewPost={() => openEditor()}
-            onEditPost={(post) => openEditor(post)}
-            onPostDeleted={handlePostDeleted}
-            onDrafts={() => navigateAdmin("drafts")}
-          />
-        )}
-        <footer className="admin-footer">
-          <span>© 2024 Biniyam Abebe</span>
-          <span>Admin workspace <i>✳</i></span>
-        </footer>
-      </div>
-    );
-  }
-
-  /*
-   * =====================================================
-   * DRAFTS
-   * =====================================================
-   */
   /*
    * =====================================================
    * PUBLIC WEBSITE
@@ -374,23 +93,14 @@ function App() {
         {sidebarOpen ? "×" : "☰"}
       </button>
 
-      {isAdmin ? (
-        <AdminLayout
-          section="dashboard"
-          onNavigate={navigateAdmin}
-          onLogout={handleLogout}
-          darkMode={darkMode}
-          onToggleTheme={() => setDarkMode(!darkMode)}
-        />
-      ) : (
       <header className="topbar">
-        <a
+        <Link
           className="wordmark"
-          href="#top"
+          to="/"
           aria-label="Biniyam Abebe home"
         >
           <span>BA</span> Biniyam Abebe
-        </a>
+        </Link>
 
         <nav
           className={
@@ -399,32 +109,32 @@ function App() {
               : ""
           }
         >
-          <a
-            href="#writing"
+          <Link
+            to="/#writing"
             onClick={() =>
               setSidebarOpen(false)
             }
           >
             Writing
-          </a>
+          </Link>
 
-          <a
-            href="#about"
+          <Link
+            to="/#about"
             onClick={() =>
               setSidebarOpen(false)
             }
           >
             About
-          </a>
+          </Link>
 
-          <a
-            href="#newsletter"
+          <Link
+            to="/#newsletter"
             onClick={() =>
               setSidebarOpen(false)
             }
           >
             Newsletter
-          </a>
+          </Link>
         </nav>
 
         <button
@@ -441,7 +151,6 @@ function App() {
           </span>
         </button>
       </header>
-      )}
 
       <main id="top">
 
@@ -464,13 +173,13 @@ function App() {
             I’m Biniyam,
           </p>
 
-          <a
+          <Link
             className="text-link"
-            href="#writing"
+            to="/#writing"
           >
             Explore the writing{" "}
             <span>↘</span>
-          </a>
+          </Link>
 
           <div className="intro-mark">
             ✳
@@ -576,7 +285,7 @@ function App() {
                         <button
                           type="button"
                           onClick={() =>
-                            setSelectedPost(post)
+                            navigate(`/post/${post.id}`)
                           }
                           aria-label={`Read ${post.title}`}
                         >
@@ -754,85 +463,115 @@ function App() {
         </span>
 
         <div>
-          <a href="#top">
+          <Link to="/">
             Instagram
-          </a>
+          </Link>
         </div>
       </footer>
 
-      {selectedPost && (
-        <div
-          className="article-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="article-title"
-          onClick={() => setSelectedPost(null)}
-        >
-          <article
-            className="article-reader"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              className="article-close"
-              type="button"
-              onClick={() => setSelectedPost(null)}
-              aria-label="Close article"
-            >
-              ×
-            </button>
-
-            <div className="article-reader-content">
-              <div className="article-heading">
-                <div className="post-meta">
-                  <span>{selectedPost.category}</span>
-                  <span>
-                    {new Date(
-                      selectedPost.createdAt
-                    ).toLocaleDateString()}
-                  </span>
-                </div>
-
-                <h1 id="article-title">
-                  {selectedPost.title}
-                </h1>
-
-                <p className="article-lede">
-                  {selectedPost.excerpt || ""}
-                </p>
-
-                <span className="article-read">
-                  {Math.max(
-                    1,
-                    Math.ceil(
-                      (selectedPost.content?.length || 0) / 1200
-                    )
-                  )} min read
-                </span>
-              </div>
-
-              {selectedPost.coverImage && (
-                <img
-                  className="article-image"
-                  src={selectedPost.coverImage}
-                  alt=""
-                />
-              )}
-
-              <div className="article-body">
-                {(selectedPost.content || "")
-                  .split(/\n\s*\n/)
-                  .filter(Boolean)
-                  .map((paragraph, index) => (
-                    <p key={`${selectedPost.id}-${index}`}>
-                      {paragraph}
-                    </p>
-                  ))}
-              </div>
-            </div>
-          </article>
-        </div>
-      )}
     </div>
+  );
+}
+
+function ProtectedRoute({ isAdmin, authReady }) {
+  if (!authReady) {
+    return <div className="site"><main className="admin-main"><p>Restoring admin session...</p></main></div>;
+  }
+
+  return isAdmin ? <Outlet /> : <Navigate to="/admin" replace />;
+}
+
+function AdminLoginRoute({ isAdmin, authReady, onLogin, darkMode, onToggleTheme }) {
+  const navigate = useNavigate();
+
+  if (!authReady) {
+    return <div className="site"><main className="admin-main"><p>Restoring admin session...</p></main></div>;
+  }
+
+  if (isAdmin) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  return (
+    <AdminLogin
+      onLogin={() => {
+        onLogin();
+        navigate("/admin/dashboard", { replace: true });
+      }}
+      onBack={() => navigate("/")}
+      darkMode={darkMode}
+      onToggleTheme={onToggleTheme}
+    />
+  );
+}
+
+function AdminContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const draft = location.state?.draft || null;
+
+  const openNewPost = () => navigate("/admin/new-post");
+
+  return (
+    <Routes>
+      <Route
+        index
+        element={
+          <Admin
+            onNewPost={openNewPost}
+            onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })}
+            onPostDeleted={() => {}}
+            onDrafts={() => navigate("/admin/drafts")}
+          />
+        }
+      />
+      <Route path="dashboard" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
+      <Route path="posts" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
+      <Route path="drafts" element={<DraftsPage onBack={() => navigate("/admin")} onNewPost={openNewPost} onEditDraft={(post) => navigate("/admin/new-post", { state: { draft: post } })} />} />
+      <Route path="new-post" element={<PostPage draft={draft} onPostSaved={() => {}} onBack={() => navigate("/admin")} />} />
+      <Route path="profile" element={<Admin initialTab="profile" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
+      <Route path="settings" element={<Admin initialTab="settings" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
+    </Routes>
+  );
+}
+
+function App() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    refreshAccessToken()
+      .then(setIsAdmin)
+      .catch(() => setIsAdmin(false))
+      .finally(() => setAuthReady(true));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      setIsAdmin(false);
+      navigate("/");
+    }
+  };
+
+  return (
+    <Routes>
+      <Route path="/*" element={<Home />} />
+      <Route path="/post/:id" element={<ArticlePage />} />
+      <Route
+        path="/admin"
+        element={<AdminLoginRoute isAdmin={isAdmin} authReady={authReady} onLogin={() => setIsAdmin(true)} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}
+      />
+      <Route path="/about" element={<Home />} />
+      <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
+        <Route element={<AdminLayout onLogout={handleLogout} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
+          <Route path="/admin/*" element={<AdminContent />} />
+        </Route>
+      </Route>
+    </Routes>
   );
 }
 

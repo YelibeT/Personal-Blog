@@ -1,6 +1,17 @@
 const API_URL = (import.meta.env.VITE_API_URL || "/api")
     .replace(/[;"']+$/, "");
 
+export const fetchPublishedPost = async (id) => {
+    const response = await fetch(`${API_URL}/posts/${id}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to load post");
+    }
+
+    return data;
+};
+
 let accessToken = null;
 
 export const login = async (email, password) => {
@@ -84,4 +95,15 @@ export const apiFetch = async (endpoint, options = {}) => {
     }
 
     return response;
+};
+
+export const fetchPublishedPosts = async () => {
+    const response = await fetch(`${API_URL}/posts`);
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to load posts");
+    }
+
+    return data;
 };

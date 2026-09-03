@@ -1,57 +1,34 @@
-function AdminLayout({
-  section,
-  onNavigate,
-  onLogout,
-  darkMode,
-  onToggleTheme,
-}) {
+import { Link, NavLink, Outlet } from "react-router-dom";
+
+function AdminLayout({ onLogout, darkMode, onToggleTheme }) {
+  const navClass = ({ isActive }) =>
+    isActive ? "admin-nav-active" : "";
+
   return (
+    <div className={darkMode ? "site dark" : "site"}>
       <header className="topbar admin-topbar">
-        <button
+        <Link
           className="wordmark admin-back"
-          onClick={() => onNavigate("dashboard")}
-          aria-label="Biniyam Abebe admin dashboard"
+          to="/"
+          aria-label="Biniyam Abebe home"
         >
           <span>BA</span> Biniyam Abebe
-        </button>
+        </Link>
 
         <nav className="admin-nav">
-          <button
-            className={section === "dashboard" ? "admin-nav-active" : ""}
-            onClick={() => onNavigate("dashboard")}
-          >
+          <NavLink className={navClass} to="/admin/dashboard">
             Dashboard
-          </button>
-          <button
-            className={section === "posts" ? "admin-nav-active" : ""}
-            onClick={() => onNavigate("posts")}
-          >
+          </NavLink>
+          <NavLink className={navClass} to="/admin/posts">
             Posts
-          </button>
-          <button
-            className={section === "drafts" ? "admin-nav-active" : ""}
-            onClick={() => onNavigate("drafts")}
-          >
+          </NavLink>
+          <NavLink className={navClass} to="/admin/drafts">
             Drafts
-          </button>
-          <button
-            className={section === "new-post" ? "admin-nav-active" : ""}
-            onClick={() => onNavigate("new-post")}
-          >
+          </NavLink>
+          <NavLink className={navClass} to="/admin/new-post">
             New post
-          </button>
-          <button
-            className={section === "profile" ? "admin-nav-active" : ""}
-            onClick={() => onNavigate("profile")}
-          >
-            Profile
-          </button>
-          <button
-            className={section === "settings" ? "admin-nav-active" : ""}
-            onClick={() => onNavigate("settings")}
-          >
-            Settings
-          </button>
+          </NavLink>
+          <Link to="/">View site</Link>
           <button onClick={onLogout}>Log out</button>
         </nav>
 
@@ -68,6 +45,13 @@ function AdminLayout({
         </button>
       </header>
 
+      <Outlet />
+
+      <footer className="admin-footer">
+        <span>© 2024 Biniyam Abebe</span>
+        <span>Admin workspace <i>✳</i></span>
+      </footer>
+    </div>
   );
 }
 
