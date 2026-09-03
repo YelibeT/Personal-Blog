@@ -26,6 +26,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/admin/posts", adminPostRoutes);
 
+app.get(["/admin", "/admin/"], (req, res) => {
+  const frontendUrl =
+    process.env.FRONTEND_URL ||
+    "https://personal-blog-jade-nine.vercel.app";
+
+  res.redirect(307, `${frontendUrl}/admin`);
+});
+
 app.get("/favicon.ico", (req, res) => {
   res.status(204).end();
 });

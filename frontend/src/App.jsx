@@ -11,8 +11,11 @@ function App() {
 
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const isAdminRoute = () =>
+    window.location.pathname.replace(/\/+$/, "") === "/admin";
+
   const [showAdminLogin, setShowAdminLogin] = useState(
-    () => window.location.pathname === "/admin"
+    isAdminRoute
   );
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,10 +74,7 @@ function App() {
    */
   useEffect(() => {
     const handleRouteChange = () => {
-      const isAdminRoute =
-        window.location.pathname === "/admin";
-
-      setShowAdminLogin(isAdminRoute);
+      setShowAdminLogin(isAdminRoute());
 
       setIsPostEditor(
         window.location.hash === "#admin/new-post"
