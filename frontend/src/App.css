@@ -287,13 +287,14 @@ h2 em {
 
 .posts-grid {
   display: grid;
-  grid-template-columns: 1.28fr 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 42px 24px;
 }
 
 .post {
   display: flex;
   flex-direction: column;
+  height: 100%;
   min-width: 0;
 }
 
@@ -318,6 +319,9 @@ h2 em {
 }
 
 .post-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding-top: 18px;
 }
 
@@ -357,8 +361,8 @@ h2 em {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 21px;
-  padding-top: 14px;
+  margin-top: auto;
+  padding-top: 21px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 10px;
@@ -1395,9 +1399,8 @@ footer i {
   }
 
   .posts-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 52px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px 20px;
   }
 
   .feature-post img,
@@ -1540,6 +1543,11 @@ footer i {
 }
 
 @media (max-width: 480px) {
+  .posts-grid {
+    grid-template-columns: 1fr;
+    gap: 44px;
+  }
+
   .topbar:not(.admin-topbar),
   main:not(.admin-main),
   footer:not(.admin-footer) {
