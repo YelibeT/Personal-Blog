@@ -85,12 +85,14 @@ export const createPost = async (req, res) => {
         res.status(201).json(post);
 
     } catch (error) {
-        console.error(error);
+        console.error("GET POSTS ERROR:", error);
 
         res.status(500).json({
-            error: "Failed to create post"
+            error: "Failed to fetch posts",
+            code: error.code,
+            message: error.message
         });
-    }
+}
 };
 
 // UPDATE post - Admin only
