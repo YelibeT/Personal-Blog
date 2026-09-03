@@ -532,7 +532,6 @@ function AdminContent({ onLogout }) {
       <Route path="posts" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
       <Route path="drafts" element={<DraftsPage onBack={() => navigate("/admin")} onNewPost={openNewPost} onEditDraft={(post) => navigate("/admin/new-post", { state: { draft: post } })} />} />
       <Route path="new-post" element={<PostPage draft={draft} onPostSaved={() => {}} onBack={() => navigate("/admin")} />} />
-      <Route path="profile" element={<Admin initialTab="profile" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
       <Route path="settings" element={<Admin initialTab="settings" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
       <Route path="profile" element={<ProfilePage onLogout={onLogout} />} />
     </Routes>
@@ -583,7 +582,7 @@ function App() {
         element={<AdminLoginRoute isAdmin={isAdmin} authReady={authReady} onLogin={() => setIsAdmin(true)} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}
       />
       <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
-        <Route element={<AdminLayout onLogout={handleLogout} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
+        <Route element={<AdminLayout darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
           <Route path="/admin/*" element={<AdminContent onLogout={handleLogout} />} />
         </Route>
       </Route>

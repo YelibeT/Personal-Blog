@@ -1,6 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 
-function AdminLayout({ onLogout, darkMode, onToggleTheme }) {
+function AdminLayout({ darkMode, onToggleTheme }) {
   const navClass = ({ isActive }) =>
     isActive ? "admin-nav-active" : "";
 
@@ -32,7 +32,6 @@ function AdminLayout({ onLogout, darkMode, onToggleTheme }) {
             Profile
           </NavLink>
           <Link to="/">View site</Link>
-          <button onClick={onLogout}>Log out</button>
         </nav>
 
         <div className="admin-label">
