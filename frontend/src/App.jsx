@@ -1,22 +1,23 @@
 
 import { useEffect, useMemo, useState } from "react";
 import AdminPage from "./Admin";
+import AdminLayout from "./AdminLayout";
 import AdminLogin from "./AdminLogin";
 import "./App.css";
 import DraftsPage from "./DraftsPage";
 import PostPage from "./PostPage";
+import { logout, refreshAccessToken } from "./services/api";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecking, setAdminChecking] = useState(
+    () => window.location.pathname.replace(/\/+$/, "") === "/admin"
+  );
 
   const isAdminRoute = () =>
     window.location.pathname.replace(/\/+$/, "") === "/admin";
-
-  const [showAdminLogin, setShowAdminLogin] = useState(
-    isAdminRoute
-  );
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -29,12 +30,38 @@ function App() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   const [isPostEditor, setIsPostEditor] = useState(
-    () => window.location.hash === "#admin/new-post"
+    () => isAdminRoute() && window.location.hash === "#admin/new-post"
   );
 
   const [isDraftsPage, setIsDraftsPage] = useState(
-    () => window.location.hash === "#admin/drafts"
+    () => isAdminRoute() && window.location.hash === "#admin/drafts"
   );
+
+  useEffect(() => {
+    if (!isAdminRoute()) {
+      return undefined;
+    }
+
+    let mounted = true;
+
+    refreshAccessToken()
+      .then((restored) => {
+        if (mounted) {
+          setIsAdmin(restored);
+          setAdminChecking(false);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setIsAdmin(false);
+          setAdminChecking(false);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   /*
    * Load published posts for the public website.
@@ -93,14 +120,18 @@ function App() {
    */
   useEffect(() => {
     const handleRouteChange = () => {
-      setShowAdminLogin(isAdminRoute());
+      const adminRoute = isAdminRoute();
+
+      if (!adminRoute) {
+        setIsAdmin(false);
+      }
 
       setIsPostEditor(
-        window.location.hash === "#admin/new-post"
+        adminRoute && window.location.hash === "#admin/new-post"
       );
 
       setIsDraftsPage(
-        window.location.hash === "#admin/drafts"
+        adminRoute && window.location.hash === "#admin/drafts"
       );
     };
 
@@ -135,8 +166,8 @@ function App() {
 
     window.location.hash = "";
 
-    setShowAdminLogin(false);
     setIsAdmin(false);
+    setAdminChecking(false);
     setIsPostEditor(false);
     setIsDraftsPage(false);
     setEditorDraft(null);
@@ -152,8 +183,46 @@ function App() {
 
     setIsPostEditor(true);
     setIsDraftsPage(false);
-    setIsAdmin(false);
-    setShowAdminLogin(false);
+    setIsAdmin(true);
+  };
+
+  const navigateAdmin = (section) => {
+    if (section === "drafts") {
+      window.location.hash = "admin/drafts";
+    } else if (section === "new-post") {
+      openEditor();
+      return;
+    } else if (section === "posts") {
+      window.location.hash = "admin/posts";
+    } else if (section === "profile" || section === "settings") {
+      window.location.hash = `admin/${section}`;
+    } else {
+      window.location.hash = "";
+    }
+
+    setIsPostEditor(false);
+    setIsDraftsPage(section === "drafts");
+    setIsAdmin(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
+      goHome();
+    }
+  };
+
+  const getAdminSection = () => {
+    const section = window.location.hash.replace("#admin/", "");
+
+    return [
+      "posts",
+      "profile",
+      "settings"
+    ].includes(section)
+      ? section
+      : "dashboard";
   };
 
   const handlePostSaved = (savedPost) => {
@@ -192,16 +261,14 @@ function App() {
    * ADMIN LOGIN
    * =====================================================
    */
-  if (
-    showAdminLogin &&
-    !isAdmin &&
-    !isPostEditor &&
-    !isDraftsPage
-  ) {
+  if (adminChecking && isAdminRoute()) {
+    return <div className="site"><main className="admin-main"><p>Restoring admin session...</p></main></div>;
+  }
+
+  if (isAdminRoute() && !isAdmin) {
     return (
       <AdminLogin
         onLogin={() => {
-          setShowAdminLogin(false);
           setIsAdmin(true);
         }}
         onBack={goHome}
@@ -218,30 +285,38 @@ function App() {
    * ADMIN DASHBOARD
    * =====================================================
    */
-  if (isAdmin) {
+  if (isAdmin && isAdminRoute()) {
     return (
-      <AdminPage
-        onBack={goHome}
-        onNewPost={() => {
-          openEditor();
-        }}
-        onEditPost={(post) => {
-          openEditor(post);
-        }}
-        onPostDeleted={handlePostDeleted}
-        onDrafts={() => {
-          window.location.hash =
-            "admin/drafts";
-
-          setIsDraftsPage(true);
-          setIsAdmin(false);
-          setShowAdminLogin(false);
-        }}
+      <AdminLayout
+        section={isPostEditor ? "new-post" : isDraftsPage ? "drafts" : getAdminSection()}
+        onNavigate={navigateAdmin}
+        onLogout={handleLogout}
         darkMode={darkMode}
-        onToggleTheme={() =>
-          setDarkMode(!darkMode)
-        }
-      />
+        onToggleTheme={() => setDarkMode(!darkMode)}
+      >
+        {isPostEditor ? (
+          <PostPage
+            draft={editorDraft}
+            onPostSaved={handlePostSaved}
+            onBack={() => navigateAdmin("dashboard")}
+          />
+        ) : isDraftsPage ? (
+          <DraftsPage
+            onBack={() => navigateAdmin("dashboard")}
+            onNewPost={() => openEditor()}
+            onEditDraft={(draft) => openEditor(draft)}
+          />
+        ) : (
+          <AdminPage
+            key={getAdminSection()}
+            initialTab={getAdminSection() === "profile" || getAdminSection() === "settings" ? getAdminSection() : "dashboard"}
+            onNewPost={() => openEditor()}
+            onEditPost={(post) => openEditor(post)}
+            onPostDeleted={handlePostDeleted}
+            onDrafts={() => navigateAdmin("drafts")}
+          />
+        )}
+      </AdminLayout>
     );
   }
 
@@ -250,54 +325,6 @@ function App() {
    * DRAFTS
    * =====================================================
    */
-  if (isDraftsPage) {
-    return (
-      <DraftsPage
-        onBack={() => {
-          window.location.hash = "";
-
-          setIsDraftsPage(false);
-          setIsAdmin(true);
-        }}
-        onNewPost={() => {
-          openEditor();
-        }}
-        onEditDraft={(draft) => {
-          openEditor(draft);
-        }}
-        darkMode={darkMode}
-        onToggleTheme={() =>
-          setDarkMode(!darkMode)
-        }
-      />
-    );
-  }
-
-  /*
-   * =====================================================
-   * POST EDITOR
-   * =====================================================
-   */
-  if (isPostEditor) {
-    return (
-      <PostPage
-        draft={editorDraft}
-        onPostSaved={handlePostSaved}
-        onBack={() => {
-          window.location.hash = "";
-
-          setIsPostEditor(false);
-          setEditorDraft(null);
-          setIsAdmin(true);
-        }}
-        darkMode={darkMode}
-        onToggleTheme={() =>
-          setDarkMode(!darkMode)
-        }
-      />
-    );
-  }
-
   /*
    * =====================================================
    * PUBLIC WEBSITE

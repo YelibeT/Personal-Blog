@@ -2,18 +2,16 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "./services/api";
 
 function AdminPage({
-  onBack,
   onNewPost,
   onEditPost,
   onPostDeleted,
   onDrafts,
-  darkMode,
-  onToggleTheme
+  initialTab = "dashboard"
 }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, profile, settings
+  const [activeTab, setActiveTab] = useState(initialTab); // dashboard, profile, settings
   const [profileData, setProfileData] = useState({
     siteName: "Biniyam Abebe",
     siteDescription: "Independent Writer & Med-Student",
@@ -126,56 +124,7 @@ function AdminPage({
   const drafts = posts.filter((post) => !post.published);
 
   return (
-    <div className={darkMode ? "site dark" : "site"}>
-      <header className="topbar admin-topbar">
-        <button
-          className="wordmark admin-back"
-          onClick={onBack}
-          aria-label="Biniyam Abebe home"
-        >
-          <span>BA</span> Biniyam Abebe
-        </button>
-
-        <nav className="admin-nav">
-          <button 
-            className={activeTab === "dashboard" ? "admin-nav-active" : ""}
-            onClick={() => setActiveTab("dashboard")}
-          >
-            Dashboard
-          </button>
-
-          <button 
-            className={activeTab === "profile" ? "admin-nav-active" : ""}
-            onClick={() => setActiveTab("profile")}
-          >
-            Profile
-          </button>
-
-          <button 
-            className={activeTab === "settings" ? "admin-nav-active" : ""}
-            onClick={() => setActiveTab("settings")}
-          >
-            Settings
-          </button>
-
-          <button onClick={onDrafts}>
-            Drafts
-          </button>
-        </nav>
-
-        <div className="admin-label">
-          <span className="status-dot" /> Admin workspace
-        </div>
-
-        <button
-          className="theme-toggle"
-          onClick={onToggleTheme}
-          aria-label="Toggle color theme"
-        >
-          <span>{darkMode ? "☼" : "◐"}</span>
-        </button>
-      </header>
-
+    <div className="admin-page-content">
       <main className="admin-main">
         {/* DASHBOARD TAB */}
         {activeTab === "dashboard" && (
@@ -576,20 +525,6 @@ function AdminPage({
         )}
       </main>
 
-      <footer className="admin-footer">
-        <span>© 2024 {profileData.siteName}</span>
-
-        <span>
-          Admin workspace <i>✳</i>
-        </span>
-
-        <button
-          className="footer-back"
-          onClick={onBack}
-        >
-          ← Back to site
-        </button>
-      </footer>
     </div>
   );
 }

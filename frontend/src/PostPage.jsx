@@ -4,9 +4,7 @@ import { apiFetch } from "./services/api";
 function PostPage({
   draft,
   onPostSaved,
-  onBack,
-  darkMode,
-  onToggleTheme
+  onBack
 }) {
   const [title, setTitle] = useState(
     draft?.title || ""
@@ -137,43 +135,8 @@ function PostPage({
 
   return (
     <div
-      className={
-        darkMode
-          ? "site dark"
-          : "site"
-      }
+      className="admin-page-content"
     >
-      <header className="topbar post-topbar">
-        <button
-          className="wordmark post-back"
-          onClick={onBack}
-          aria-label="Biniyam Abebe home"
-        >
-          <span>BA</span>{" "}
-          Biniyam Abebe
-        </button>
-
-        <div className="admin-label">
-          <span className="status-dot" />
-
-          {draft
-            ? "Editing draft"
-            : "Writing a new post"}
-        </div>
-
-        <button
-          className="theme-toggle"
-          onClick={onToggleTheme}
-          aria-label="Toggle color theme"
-        >
-          <span>
-            {darkMode
-              ? "☼"
-              : "◐"}
-          </span>
-        </button>
-      </header>
-
       <main className="post-editor-page">
         <button
           className="back-link"
@@ -344,18 +307,6 @@ function PostPage({
         </form>
       </main>
 
-      <footer>
-        <span>
-          © 2024 Biniyam Abebe
-        </span>
-
-        <button
-          className="footer-back"
-          onClick={onBack}
-        >
-          ← Back to dashboard
-        </button>
-      </footer>
     </div>
   );
 }

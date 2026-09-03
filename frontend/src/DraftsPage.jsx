@@ -4,9 +4,7 @@ import { apiFetch } from "./services/api";
 function DraftsPage({
   onBack,
   onNewPost,
-  onEditDraft,
-  darkMode,
-  onToggleTheme
+  onEditDraft
 }) {
   const [drafts, setDrafts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +36,7 @@ function DraftsPage({
   };
 
   useEffect(() => {
-    loadDrafts();
+    Promise.resolve().then(loadDrafts);
   }, []);
 
   const handleDelete = async (id) => {
@@ -79,44 +77,8 @@ function DraftsPage({
 
   return (
     <div
-      className={
-        darkMode ? "site dark" : "site"
-      }
+      className="admin-page-content"
     >
-      <header className="topbar admin-topbar">
-        <button
-          className="wordmark admin-back"
-          onClick={onBack}
-          aria-label="Biniyam Abebe home"
-        >
-          <span>BA</span> Biniyam Abebe
-        </button>
-
-        <nav className="admin-nav">
-          <button onClick={onBack}>
-            Dashboard
-          </button>
-
-          <button className="admin-nav-active">
-            Drafts
-          </button>
-        </nav>
-
-        <div className="admin-label">
-          <span className="status-dot" /> Draft library
-        </div>
-
-        <button
-          className="theme-toggle"
-          onClick={onToggleTheme}
-          aria-label="Toggle color theme"
-        >
-          <span>
-            {darkMode ? "☼" : "◐"}
-          </span>
-        </button>
-      </header>
-
       <main className="admin-main drafts-page">
         <button
           className="back-link"
@@ -232,16 +194,6 @@ function DraftsPage({
         )}
       </main>
 
-      <footer className="admin-footer">
-        <span>© 2024 Biniyam Abebe</span>
-
-        <button
-          className="footer-back"
-          onClick={onBack}
-        >
-          ← Back to site
-        </button>
-      </footer>
     </div>
   );
 }
