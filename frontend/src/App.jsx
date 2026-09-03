@@ -44,7 +44,7 @@ function App() {
         setPostsLoading(true);
 
         const response = await fetch(
-          "http://localhost:8800/api/posts"
+          "https://personal-blog-oum3.vercel.app/api/posts"
         );
 
         const data = await response.json();
