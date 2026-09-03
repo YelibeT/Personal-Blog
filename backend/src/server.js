@@ -15,12 +15,17 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: (origin, callback) => {
+      const allowedOrigins = new Set([
+        "http://localhost:5173",
+        "https://personal-blog-jade-nine.vercel.app",
+        "https://personal-blog-yelibets-projects.vercel.app",
+        "https://biniyam-personalblog.vercel.app",
+        process.env.FRONTEND_URL
+      ].filter(Boolean));
+
       const isAllowed =
         !origin ||
-        origin === "http://localhost:5173" ||
-        origin === "https://personal-blog-jade-nine.vercel.app" ||
-        origin === "https://personal-blog-yelibets-projects.vercel.app" ||
-        origin === "https://biniyam-personalblog.vercel.app" ||
+        allowedOrigins.has(origin) ||
         /^https:\/\/personal-blog-[a-z0-9-]+\.vercel\.app$/.test(origin);
 
       callback(null, isAllowed);
@@ -36,7 +41,7 @@ app.use("/api/admin/posts", adminPostRoutes);
 app.get(["/admin", "/admin/"], (req, res) => {
   const frontendUrl =
     process.env.FRONTEND_URL ||
-    "https://personal-blog-jade-nine.vercel.app";
+    "https://biniyam-personalblog.vercel.app";
 
   res.redirect(307, `${frontendUrl}/admin`);
 });
