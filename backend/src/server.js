@@ -20,6 +20,7 @@ app.use(
         origin === "http://localhost:5173" ||
         origin === "https://personal-blog-jade-nine.vercel.app" ||
         origin === "https://personal-blog-yelibets-projects.vercel.app" ||
+        origin === "https://biniyam-personalblog.vercel.app" ||
         /^https:\/\/personal-blog-[a-z0-9-]+\.vercel\.app$/.test(origin);
 
       callback(null, isAllowed);
