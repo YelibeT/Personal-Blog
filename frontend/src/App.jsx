@@ -30,25 +30,23 @@ function App() {
   const [selectedPost, setSelectedPost] = useState(null);
 
   const [isPostEditor, setIsPostEditor] = useState(
-    () => isAdminRoute() && window.location.hash === "#admin/new-post"
+    () => window.location.hash === "#admin/new-post"
   );
 
   const [isDraftsPage, setIsDraftsPage] = useState(
-    () => isAdminRoute() && window.location.hash === "#admin/drafts"
+    () => window.location.hash === "#admin/drafts"
   );
 
   useEffect(() => {
-    if (!isAdminRoute()) {
-      return undefined;
-    }
-
     let mounted = true;
 
     refreshAccessToken()
       .then((restored) => {
         if (mounted) {
           setIsAdmin(restored);
-          setAdminChecking(false);
+          if (isAdminRoute()) {
+            setAdminChecking(false);
+          }
         }
       })
       .catch(() => {
@@ -122,17 +120,17 @@ function App() {
     const handleRouteChange = () => {
       const adminRoute = isAdminRoute();
 
-      if (!adminRoute) {
-        setIsAdmin(false);
-      }
-
       setIsPostEditor(
-        adminRoute && window.location.hash === "#admin/new-post"
+        isAdmin && window.location.hash === "#admin/new-post"
       );
 
       setIsDraftsPage(
-        adminRoute && window.location.hash === "#admin/drafts"
+        isAdmin && window.location.hash === "#admin/drafts"
       );
+
+      if (adminRoute && !isAdmin) {
+        setAdminChecking(true);
+      }
     };
 
     window.addEventListener(
@@ -156,7 +154,7 @@ function App() {
         handleRouteChange
       );
     };
-  }, []);
+  }, [isAdmin]);
 
   /*
    * Return to public homepage.
@@ -167,6 +165,16 @@ function App() {
     window.location.hash = "";
 
     setIsAdmin(false);
+    setAdminChecking(false);
+    setIsPostEditor(false);
+    setIsDraftsPage(false);
+    setEditorDraft(null);
+  };
+
+  const enterAdmin = () => {
+    window.history.pushState({}, "", "/");
+    window.location.hash = "";
+    setIsAdmin(true);
     setAdminChecking(false);
     setIsPostEditor(false);
     setIsDraftsPage(false);
@@ -197,7 +205,7 @@ function App() {
     } else if (section === "profile" || section === "settings") {
       window.location.hash = `admin/${section}`;
     } else {
-      window.location.hash = "";
+      window.location.hash = "admin/dashboard";
     }
 
     setIsPostEditor(false);
@@ -217,6 +225,7 @@ function App() {
     const section = window.location.hash.replace("#admin/", "");
 
     return [
+      "dashboard",
       "posts",
       "profile",
       "settings"
@@ -269,7 +278,7 @@ function App() {
     return (
       <AdminLogin
         onLogin={() => {
-          setIsAdmin(true);
+          enterAdmin();
         }}
         onBack={goHome}
         darkMode={darkMode}
@@ -285,15 +294,19 @@ function App() {
    * ADMIN DASHBOARD
    * =====================================================
    */
-  if (isAdmin && isAdminRoute()) {
+  const adminSection = getAdminSection();
+  const hasAdminSection = isAdmin && window.location.hash.startsWith("#admin/");
+
+  if (hasAdminSection) {
     return (
-      <AdminLayout
-        section={isPostEditor ? "new-post" : isDraftsPage ? "drafts" : getAdminSection()}
-        onNavigate={navigateAdmin}
-        onLogout={handleLogout}
-        darkMode={darkMode}
-        onToggleTheme={() => setDarkMode(!darkMode)}
-      >
+      <div className={darkMode ? "site dark" : "site"}>
+        <AdminLayout
+          section={isPostEditor ? "new-post" : isDraftsPage ? "drafts" : adminSection}
+          onNavigate={navigateAdmin}
+          onLogout={handleLogout}
+          darkMode={darkMode}
+          onToggleTheme={() => setDarkMode(!darkMode)}
+        />
         {isPostEditor ? (
           <PostPage
             draft={editorDraft}
@@ -316,7 +329,11 @@ function App() {
             onDrafts={() => navigateAdmin("drafts")}
           />
         )}
-      </AdminLayout>
+        <footer className="admin-footer">
+          <span>© 2024 Biniyam Abebe</span>
+          <span>Admin workspace <i>✳</i></span>
+        </footer>
+      </div>
     );
   }
 
@@ -357,6 +374,15 @@ function App() {
         {sidebarOpen ? "×" : "☰"}
       </button>
 
+      {isAdmin ? (
+        <AdminLayout
+          section="dashboard"
+          onNavigate={navigateAdmin}
+          onLogout={handleLogout}
+          darkMode={darkMode}
+          onToggleTheme={() => setDarkMode(!darkMode)}
+        />
+      ) : (
       <header className="topbar">
         <a
           className="wordmark"
@@ -415,6 +441,7 @@ function App() {
           </span>
         </button>
       </header>
+      )}
 
       <main id="top">
 

@@ -4,10 +4,8 @@ function AdminLayout({
   onLogout,
   darkMode,
   onToggleTheme,
-  children
 }) {
   return (
-    <div className={darkMode ? "site dark" : "site"}>
       <header className="topbar admin-topbar">
         <button
           className="wordmark admin-back"
@@ -70,13 +68,6 @@ function AdminLayout({
         </button>
       </header>
 
-      {children}
-
-      <footer className="admin-footer">
-        <span>© 2024 Biniyam Abebe</span>
-        <span>Admin workspace <i>✳</i></span>
-      </footer>
-    </div>
   );
 }
 
