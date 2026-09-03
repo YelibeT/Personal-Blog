@@ -56,9 +56,7 @@ function AdminLogin({ onLogin, onBack, darkMode, onToggleTheme }) {
           <div>
             <p className="eyebrow">Private workspace</p>
             <h1>Admin login</h1>
-            <p className="admin-subtitle">
-              Sign in to manage your writing.
-            </p>
+            <p className="admin-subtitle">Sign in to manage your writing.</p>
           </div>
         </div>
 
@@ -74,9 +72,7 @@ function AdminLogin({ onLogin, onBack, darkMode, onToggleTheme }) {
               <input
                 type="email"
                 value={email}
-                onChange={(event) =>
-                  setEmail(event.target.value)
-                }
+                onChange={(event) => setEmail(event.target.value)}
                 placeholder="Admin email"
                 required
                 autoComplete="email"
@@ -89,9 +85,7 @@ function AdminLogin({ onLogin, onBack, darkMode, onToggleTheme }) {
               <input
                 type="password"
                 value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
+                onChange={(event) => setPassword(event.target.value)}
                 placeholder="Password"
                 required
                 autoComplete="current-password"
@@ -133,4 +127,3 @@ function AdminLogin({ onLogin, onBack, darkMode, onToggleTheme }) {
 }
 
 export default AdminLogin;
-
