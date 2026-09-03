@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Biniyam Blog</title>
+  <rect width="64" height="64" rx="14" fill="#302d2b"/>
+  <path d="M51 52H13V12h38" fill="none" stroke="#e7624f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="32" y="40" fill="#f5f1eb" font-family="Georgia, serif" font-size="25" font-weight="700" text-anchor="middle">BA</text>
+</svg>
