@@ -41,6 +41,32 @@ const getPostPreview = (post) => {
     : preview;
 };
 
+function SocialIcon({ name }) {
+  if (name === "tiktok") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M15.4 3.2c.3 1.8 1.3 3 3.1 3.2v2.8c-1.2 0-2.3-.3-3.2-.9v6.1c0 3.4-2.2 5.6-5.3 5.6-2.9 0-5-2-5-4.8 0-3.1 2.5-5.2 5.7-5.2.3 0 .6 0 .9.1v2.9c-.3-.1-.6-.2-.9-.2-1.3 0-2.4.9-2.4 2.3 0 1.2.8 2.1 2 2.1 1.3 0 2.1-.9 2.1-2.5V3.2h3z" />
+      </svg>
+    );
+  }
+
+  if (name === "instagram") {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
+        <circle cx="12" cy="12" r="4" />
+        <circle className="social-icon-dot" cx="17.5" cy="6.5" r="1" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M13.7 21v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5h1.7V3.6c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.1v2.3H8v3.1h2.6v8h3.1z" />
+    </svg>
+  );
+}
+
 function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -58,9 +84,7 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
     section?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [location.hash]);
 
-  /*
-   * Search public posts.
-   */
+  
   const visiblePosts = useMemo(() => {
     return posts.filter((post) =>
       `${post.title || ""} ${post.excerpt || ""} ${post.category || ""}`
@@ -86,21 +110,19 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
         </Link>
 
         <nav className={sidebarOpen ? "is-open" : ""}>
+
           <Link to="/" onClick={() => setSidebarOpen(false)}>
             Home
-          </Link>
-
-          <Link to="/#writing" onClick={() => setSidebarOpen(false)}>
-            Writing
           </Link>
 
           <Link to="/#about" onClick={() => setSidebarOpen(false)}>
             About
           </Link>
 
-          <Link to="/#newsletter" onClick={() => setSidebarOpen(false)}>
-            Newsletter
+          <Link to="/#writing" onClick={() => setSidebarOpen(false)}>
+            Writing
           </Link>
+
         </nav>
 
         <button
@@ -222,7 +244,9 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
               target="_blank"
               rel="noreferrer"
               >
-              <span className="social-icon">◎</span>
+              <span className="social-icon" aria-label="TikTok">
+                <SocialIcon name="tiktok" />
+              </span>
 
               <span>
                 <strong>Tiktok</strong>
@@ -238,7 +262,9 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
               target="_blank"
               rel="noreferrer"
               >
-              <span className="social-icon">◎</span>
+              <span className="social-icon" aria-label="Instagram">
+                <SocialIcon name="instagram" />
+              </span>
 
               <span>
                 <strong>Instagram</strong>
@@ -254,7 +280,9 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
               target="_blank"
               rel="noreferrer"
             >
-              <span className="social-icon">F</span>
+              <span className="social-icon" aria-label="Facebook">
+                <SocialIcon name="facebook" />
+              </span>
 
               <span>
                 <strong>Facebook</strong>
@@ -271,9 +299,9 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
         <span>© 2024 Biniyam Abebe</span>
 
         <div>
-          <Link to="https://www.instagram.com/biniyam7185/?hl=en">Instagram</Link>
-          <Link to="https://www.tiktok.com/@binu_abebe">Tiktok</Link>
-          <Link to="https://web.facebook.com/biniyam.abebe.98284?locale=fr_FR">Tiktok</Link>
+          <a href="https://www.instagram.com/biniyam7185/?hl=en">Instagram</a>
+          <a href="https://www.tiktok.com/@binu_abebe">Tiktok</a>
+          <a href="https://web.facebook.com/biniyam.abebe.98284?locale=fr_FR">Facebook</a>
           
         </div>
       </footer>

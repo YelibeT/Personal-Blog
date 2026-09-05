@@ -5,7 +5,7 @@ function PostPage({
   draft,
   onPostSaved,
   onBack
-}) {
+  }) {
   const [title, setTitle] = useState(
     draft?.title || ""
   );
@@ -303,7 +303,7 @@ function PostPage({
                 name="action"
                 value="publish"
                 disabled={saving}
-              >
+                >
                 {saving
                   ? "Please wait..."
                   : draft?.published

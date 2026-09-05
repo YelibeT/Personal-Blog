@@ -798,6 +798,18 @@ h2 em {
   flex: 0 0 auto;
 }
 
+.social-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.7;
+}
+
+.social-icon-dot {
+  stroke: none;
+}
+
 .social-icon + span {
   display: flex;
   flex-direction: column;

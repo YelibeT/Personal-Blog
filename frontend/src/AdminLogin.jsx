@@ -16,7 +16,6 @@ function AdminLogin({ onLogin, onBack, darkMode, onToggleTheme }) {
     try {
       await login(email, password);
 
-      // Backend confirmed that this is an ADMIN
       onLogin();
     } catch (error) {
       console.error("Login failed:", error);
