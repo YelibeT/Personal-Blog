@@ -1,6 +1,13 @@
-
 import { useEffect, useMemo, useState } from "react";
-import { Link, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import "./App.css";
 import ArticlePage from "./ArticlePage";
 import Admin from "./Admin";
@@ -12,7 +19,7 @@ import ProfilePage from "./ProfilePage";
 import {
   fetchPublishedPosts,
   logout,
-  refreshAccessToken
+  refreshAccessToken,
 } from "./services/api";
 
 const stripPostFormatting = (value = "") =>
@@ -35,7 +42,6 @@ const getPostPreview = (post) => {
 };
 
 function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [subscribed, setSubscribed] = useState(false);
@@ -57,114 +63,59 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
    */
   const visiblePosts = useMemo(() => {
     return posts.filter((post) =>
-      `${post.title || ""} ${
-        post.excerpt || ""
-      } ${post.category || ""}`
+      `${post.title || ""} ${post.excerpt || ""} ${post.category || ""}`
         .toLowerCase()
-        .includes(query.toLowerCase())
+        .includes(query.toLowerCase()),
     );
   }, [posts, query]);
 
- 
   return (
-    <div
-      className={
-        darkMode
-          ? "site dark"
-          : "site"
-      }
-    >
+    <div className={darkMode ? "site dark" : "site"}>
       <button
         className="menu-toggle"
-        onClick={() =>
-          setSidebarOpen(!sidebarOpen)
-        }
-        aria-label={
-          sidebarOpen
-            ? "Close navigation"
-            : "Open navigation"
-        }
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label={sidebarOpen ? "Close navigation" : "Open navigation"}
         aria-expanded={sidebarOpen}
       >
         {sidebarOpen ? "×" : "☰"}
       </button>
 
       <header className="topbar">
-        <Link
-          className="wordmark"
-          to="/"
-          aria-label="Biniyam Abebe home"
-        >
+        <Link className="wordmark" to="/" aria-label="Biniyam Abebe home">
           <span>BA</span> Biniyam Abebe
         </Link>
 
-        <nav
-          className={
-            sidebarOpen
-              ? "is-open"
-              : ""
-          }
-        >
-          <Link
-            to="/"
-            onClick={() => setSidebarOpen(false)}
-          >
+        <nav className={sidebarOpen ? "is-open" : ""}>
+          <Link to="/" onClick={() => setSidebarOpen(false)}>
             Home
           </Link>
 
-          <Link
-            to="/#writing"
-            onClick={() =>
-              setSidebarOpen(false)
-            }
-          >
+          <Link to="/#writing" onClick={() => setSidebarOpen(false)}>
             Writing
           </Link>
 
-          <Link
-            to="/#about"
-            onClick={() =>
-              setSidebarOpen(false)
-            }
-          >
+          <Link to="/#about" onClick={() => setSidebarOpen(false)}>
             About
           </Link>
 
-          <Link
-            to="/#newsletter"
-            onClick={() =>
-              setSidebarOpen(false)
-            }
-          >
+          <Link to="/#newsletter" onClick={() => setSidebarOpen(false)}>
             Newsletter
           </Link>
         </nav>
 
         <button
           className="theme-toggle"
-          onClick={() =>
-            onToggleTheme()
-          }
+          onClick={() => onToggleTheme()}
           aria-label="Toggle color theme"
         >
-          <span>
-            {darkMode
-              ? "☼"
-              : "◐"}
-          </span>
+          <span>{darkMode ? "☼" : "◐"}</span>
         </button>
       </header>
 
       <main id="top">
-
         {/* ABOUT / HERO */}
-        <section
-          className="intro"
-          id="about"
-        >
-          <p className="eyebrow">
-            INDEPENDENT WRITER & MED-STUDENT
-          </p>
+        <section className="intro" id="about">
+          <p className="eyebrow">WRITER & MED-STUDENT</p>
 
           <h1>
             Biniyam
@@ -172,37 +123,22 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
             <em>Abebe</em>
           </h1>
 
-          <p className="intro-copy">
-            Paragraph
-          </p>
+          <p className="intro-copy">I am a medical student and writer with a passion for sharing knowledge and creating meaningful content. As a Christian young person, I write about my personal experiences, spiritual struggles, lessons, and discoveries, using the Bible to understand and clarify what I have experienced. I believe that when biblical truth is shared in a simple, honest, and meaningful way, it can make a lasting impact on the spiritual lives of Christians. Through my writing and teaching, my desire is to share what I learn, encourage others in their faith, and help young Christians grow closer to God and His Word.</p>
 
-          <Link
-            className="text-link"
-            to="/#writing"
-          >
-            Explore the writing{" "}
-            <span>↘</span>
+          <Link className="text-link" to="/#writing">
+            Explore the writing <span>↘</span>
           </Link>
 
-          <div className="intro-mark">
-            ✳
-          </div>
+          <div className="intro-mark">✳</div>
         </section>
 
         {/* SELECTED WRITING */}
-        <section
-          className="writing-section"
-          id="writing"
-        >
+        <section className="writing-section" id="writing">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">
-                The latest
-              </p>
+              <p className="eyebrow">The latest</p>
 
-              <h2>
-                Selected writing
-              </h2>
+              <h2>Selected writing</h2>
             </div>
 
             <div className="search-wrap">
@@ -210,11 +146,7 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
 
               <input
                 value={query}
-                onChange={(event) =>
-                  setQuery(
-                    event.target.value
-                  )
-                }
+                onChange={(event) => setQuery(event.target.value)}
                 placeholder="Search notes"
                 aria-label="Search notes"
               />
@@ -222,194 +154,164 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
           </div>
 
           {postsLoading ? (
-            <p className="empty-state">
-              Loading writing...
-            </p>
+            <p className="empty-state">Loading writing...</p>
           ) : visiblePosts.length ? (
             <div className="posts-grid">
-              {visiblePosts.map(
-                (post) => (
-                  <article
-                    className="post"
-                    key={post.id}
-                  >
-                    {post.coverImage && (
-                      <img
-                        src={
-                          post.coverImage
-                        }
-                        alt=""
-                      />
-                    )}
+              {visiblePosts.map((post) => (
+                <article className="post" key={post.id}>
+                  {post.coverImage && <img src={post.coverImage} alt="" />}
 
-                    <div className="post-info">
+                  <div className="post-info">
+                    <div className="post-meta">
+                      <span>{post.category}</span>
 
-                      <div className="post-meta">
-                        <span>
-                          {
-                            post.category
-                          }
-                        </span>
-
-                        <span>
-                          {new Date(
-                            post.createdAt
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
-
-                      <h3>
-                        {post.title}
-                      </h3>
-
-                      <p>
-                        {getPostPreview(post)}
-                      </p>
-
-                      <div className="post-footer">
-
-                        <span>
-                          {Math.max(
-                            1,
-                            Math.ceil(
-                              (
-                                post.content
-                                  ?.length ||
-                                0
-                              ) / 1200
-                            )
-                          )}{" "}
-                          min read
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(`/post/${post.id}`, {
-                              state: { backgroundLocation: location }
-                            })
-                          }
-                          aria-label={`Read ${post.title}`}
-                        >
-                          Read article{" "}
-                          <b>↗</b>
-                        </button>
-
-                      </div>
+                      <span>
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                  </article>
-                )
-              )}
+
+                    <h3>{post.title}</h3>
+
+                    <p>{getPostPreview(post)}</p>
+
+                    <div className="post-footer">
+                      <span>
+                        {Math.max(
+                          1,
+                          Math.ceil((post.content?.length || 0) / 1200),
+                        )}{" "}
+                        min read
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/post/${post.id}`, {
+                            state: { backgroundLocation: location },
+                          })
+                        }
+                        aria-label={`Read ${post.title}`}
+                      >
+                        Read article <b>↗</b>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           ) : (
-            <p className="empty-state">
-              No notes found.
-            </p>
+            <p className="empty-state">No notes found.</p>
           )}
         </section>
 
         {/* SOCIAL */}
-        <section
-          className="social-section"
-          id="social"
-        >
+        <section className="social-section" id="social">
           <div className="social-intro">
-
-            <p className="eyebrow">
-              Find me elsewhere
-            </p>
+            <p className="eyebrow">Find me elsewhere</p>
 
             <h2>
               Come say
               <br />
               <em>hello.</em>
             </h2>
-
           </div>
 
           <div className="social-links">
-
             <a
-              href="https://www.instagram.com/"
+              href="https://www.tiktok.com/@binu_abebe"
               target="_blank"
               rel="noreferrer"
-            >
-              <span className="social-icon">
-                ◎
-              </span>
+              >
+              <span className="social-icon">◎</span>
 
               <span>
-                <strong>
-                  Instagram
-                </strong>
+                <strong>Tiktok</strong>
 
-                <small>
-                  Photos & fragments
-                </small>
+                
               </span>
 
               <b>↗</b>
             </a>
 
             <a
-              href="https://www.linkedin.com/"
+              href="https://www.instagram.com/biniyam7185/?hl=en"
               target="_blank"
               rel="noreferrer"
-            >
-              <span className="social-icon">
-                in
-              </span>
+              >
+              <span className="social-icon">◎</span>
 
               <span>
-                <strong>
-                  LinkedIn
-                </strong>
+                <strong>Instagram</strong>
 
-                <small>
-                  Work & collaborations
-                </small>
+                
               </span>
 
               <b>↗</b>
             </a>
 
+            <a
+              href="https://web.facebook.com/biniyam.abebe.98284?locale=fr_FR"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span className="social-icon">F</span>
+
+              <span>
+                <strong>Facebook</strong>
+
+              </span>
+
+              <b>↗</b>
+            </a>
           </div>
         </section>
-
       </main>
 
       <footer>
-        <span>
-          © 2024 Biniyam Abebe
-        </span>
+        <span>© 2024 Biniyam Abebe</span>
 
         <div>
-          <Link to="/">
-            Instagram
-          </Link>
-          <Link to="/">
-            Medium
-          </Link>
+          <Link to="https://www.instagram.com/biniyam7185/?hl=en">Instagram</Link>
+          <Link to="https://www.tiktok.com/@binu_abebe">Tiktok</Link>
+          <Link to="https://web.facebook.com/biniyam.abebe.98284?locale=fr_FR">Tiktok</Link>
+          
         </div>
       </footer>
-
     </div>
   );
 }
 
 function ProtectedRoute({ isAdmin, authReady }) {
   if (!authReady) {
-    return <div className="site"><main className="admin-main"><p>Restoring admin session...</p></main></div>;
+    return (
+      <div className="site">
+        <main className="admin-main">
+          <p>Restoring admin session...</p>
+        </main>
+      </div>
+    );
   }
 
   return isAdmin ? <Outlet /> : <Navigate to="/admin" replace />;
 }
 
-function AdminLoginRoute({ isAdmin, authReady, onLogin, darkMode, onToggleTheme }) {
+function AdminLoginRoute({
+  isAdmin,
+  authReady,
+  onLogin,
+  darkMode,
+  onToggleTheme,
+}) {
   const navigate = useNavigate();
 
   if (!authReady) {
-    return <div className="site"><main className="admin-main"><p>Restoring admin session...</p></main></div>;
+    return (
+      <div className="site">
+        <main className="admin-main">
+          <p>Restoring admin session...</p>
+        </main>
+      </div>
+    );
   }
 
   if (isAdmin) {
@@ -443,17 +345,76 @@ function AdminContent({ onLogout, onPostSaved, onPostDeleted }) {
         element={
           <Admin
             onNewPost={openNewPost}
-            onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })}
+            onEditPost={(post) =>
+              navigate("/admin/new-post", { state: { draft: post } })
+            }
             onPostDeleted={onPostDeleted}
             onDrafts={() => navigate("/admin/drafts")}
           />
         }
       />
-      <Route path="dashboard" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={onPostDeleted} onDrafts={() => navigate("/admin/drafts")} />} />
-      <Route path="posts" element={<Admin onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={onPostDeleted} onDrafts={() => navigate("/admin/drafts")} />} />
-      <Route path="drafts" element={<DraftsPage onBack={() => navigate("/admin")} onNewPost={openNewPost} onEditDraft={(post) => navigate("/admin/new-post", { state: { draft: post } })} />} />
-      <Route path="new-post" element={<PostPage draft={draft} onPostSaved={onPostSaved} onBack={() => navigate("/admin")} />} />
-      <Route path="settings" element={<Admin initialTab="settings" onNewPost={openNewPost} onEditPost={(post) => navigate("/admin/new-post", { state: { draft: post } })} onPostDeleted={() => {}} onDrafts={() => navigate("/admin/drafts")} />} />
+      <Route
+        path = "dashboard"
+        element={
+          <Admin
+            onNewPost={openNewPost}
+            onEditPost={(post) =>
+              navigate("/admin/new-post", { state: { draft: post } })
+            }
+            onPostDeleted={onPostDeleted}
+            onDrafts={() => navigate("/admin/drafts")}
+          />
+        }
+      />
+      <Route
+        path="posts"
+        element={
+          <Admin
+            onNewPost={openNewPost}
+            onEditPost={(post) =>
+              navigate("/admin/new-post", { state: { draft: post } })
+            }
+            onPostDeleted={onPostDeleted}
+            onDrafts={() => navigate("/admin/drafts")}
+          />
+        }
+      />
+      <Route
+        path="drafts"
+        element={
+          <DraftsPage
+            onBack={() => navigate("/admin")}
+            onNewPost={openNewPost}
+            onEditDraft={(post) =>
+              navigate("/admin/new-post", { state: { draft: post } })
+            }
+          />
+        }
+      />
+      <Route
+        path="new-post"
+        element={
+          <PostPage
+            draft={draft}
+            onPostSaved={onPostSaved}
+            onBack={() => navigate("/admin")}
+          />
+        }
+      />
+      <Route
+        path="settings"
+        element={
+          <Admin
+            initialTab="settings"
+            onNewPost={openNewPost}
+            onEditPost={(post) =>
+              navigate("/admin/new-post", { state: { draft: post } })
+            }
+            onPostDeleted={() => {}}
+            onDrafts={() => navigate("/admin/drafts")}
+          />
+        }
+      />
       <Route path="profile" element={<ProfilePage onLogout={onLogout} />} />
     </Routes>
   );
@@ -462,7 +423,12 @@ function AdminContent({ onLogout, onPostSaved, onPostDeleted }) {
 function ArticleRoute({ darkMode, onToggleTheme }) {
   return (
     <>
-      <Home darkMode={darkMode} onToggleTheme={onToggleTheme} posts={[]} postsLoading={false} />
+      <Home
+        darkMode={darkMode}
+        onToggleTheme={onToggleTheme}
+        posts={[]}
+        postsLoading={false}
+      />
       <ArticlePage darkMode={darkMode} onToggleTheme={onToggleTheme} />
     </>
   );
@@ -494,13 +460,19 @@ function App() {
 
   const handlePostSaved = (savedPost) => {
     setPosts((currentPosts) => {
-      const remainingPosts = currentPosts.filter((post) => post.id !== savedPost.id);
-      return savedPost.published ? [savedPost, ...remainingPosts] : remainingPosts;
+      const remainingPosts = currentPosts.filter(
+        (post) => post.id !== savedPost.id,
+      );
+      return savedPost.published
+        ? [savedPost, ...remainingPosts]
+        : remainingPosts;
     });
   };
 
   const handlePostDeleted = (postId) => {
-    setPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
+    setPosts((currentPosts) =>
+      currentPosts.filter((post) => post.id !== postId),
+    );
   };
 
   const handleLogout = async () => {
@@ -515,18 +487,72 @@ function App() {
   return (
     <>
       <Routes location={backgroundLocation || location}>
-      <Route path="/" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
-      <Route path="/about" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
-      <Route path="/post/:id" element={<ArticleRoute darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
-      <Route
-        path="/admin"
-        element={<AdminLoginRoute isAdmin={isAdmin} authReady={authReady} onLogin={() => setIsAdmin(true)} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}
-      />
-      <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
-        <Route element={<AdminLayout darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
-          <Route path="/admin/*" element={<AdminContent onLogout={handleLogout} onPostSaved={handlePostSaved} onPostDeleted={handlePostDeleted} />} />
+        <Route
+          path="/"
+          element={
+            <Home
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+              posts={posts}
+              postsLoading={postsLoading}
+            />
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <Home
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+              posts={posts}
+              postsLoading={postsLoading}
+            />
+          }
+        />
+        <Route
+          path="/post/:id"
+          element={
+            <ArticleRoute
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+            />
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminLoginRoute
+              isAdmin={isAdmin}
+              authReady={authReady}
+              onLogin={() => setIsAdmin(true)}
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+            />
+          }
+        />
+        <Route
+          element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}
+        >
+          <Route
+            element={
+              <AdminLayout
+                darkMode={darkMode}
+                onToggleTheme={() => setDarkMode(!darkMode)}
+              />
+            }
+          >
+            <Route
+              path="/admin/*"
+              element={
+                <AdminContent
+                  onLogout={handleLogout}
+                  onPostSaved={handlePostSaved}
+                  onPostDeleted={handlePostDeleted}
+                />
+              }
+            />
+          </Route>
         </Route>
-      </Route>
       </Routes>
       {backgroundLocation && (
         <Routes>
