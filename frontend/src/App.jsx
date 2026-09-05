@@ -65,15 +65,7 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
     );
   }, [posts, query]);
 
-  /*
-   * =====================================================
-   * PUBLIC WEBSITE
-   * =====================================================
-   *
-   * Visitors see ONLY this.
-   *
-   * There is intentionally no Admin link here.
-   */
+ 
   return (
     <div
       className={
@@ -175,13 +167,13 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
           </p>
 
           <h1>
-            Heading
+            Biniyam
             <br />
-            <em>Heading</em>
+            <em>Abebe</em>
           </h1>
 
           <p className="intro-copy">
-            I’m Biniyam,
+            Paragraph
           </p>
 
           <Link
@@ -311,68 +303,9 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
             </div>
           ) : (
             <p className="empty-state">
-              No notes found. Try another phrase.
+              No notes found.
             </p>
           )}
-        </section>
-
-        {/* NEWSLETTER */}
-        <section
-          className="newsletter"
-          id="newsletter"
-        >
-          <div>
-            <p className="eyebrow">
-              A letter, occasionally
-            </p>
-
-            <h2>
-              Good things,
-              <br />
-              <em>in your inbox.</em>
-            </h2>
-          </div>
-
-          <div className="signup">
-
-            <p>
-              A short note when I have
-              something worth sharing.
-              No noise, just the good stuff.
-            </p>
-
-            {subscribed ? (
-              <p className="success">
-                You’re on the list.
-                See you soon.
-              </p>
-            ) : (
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  setSubscribed(true);
-                }}
-              >
-                <input
-                  type="email"
-                  required
-                  placeholder="Your email address"
-                  aria-label="Your email address"
-                />
-
-                <button type="submit">
-                  Subscribe{" "}
-                  <span>↗</span>
-                </button>
-              </form>
-            )}
-
-            <small>
-              Unsubscribe anytime.
-              I respect your inbox.
-            </small>
-
-          </div>
         </section>
 
         {/* SOCIAL */}
@@ -440,28 +373,6 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
               <b>↗</b>
             </a>
 
-            <a
-              href="https://medium.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <span className="social-icon">
-                M
-              </span>
-
-              <span>
-                <strong>
-                  Medium
-                </strong>
-
-                <small>
-                  Essays & observations
-                </small>
-              </span>
-
-              <b>↗</b>
-            </a>
-
           </div>
         </section>
 
@@ -475,6 +386,9 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
         <div>
           <Link to="/">
             Instagram
+          </Link>
+          <Link to="/">
+            Medium
           </Link>
         </div>
       </footer>
