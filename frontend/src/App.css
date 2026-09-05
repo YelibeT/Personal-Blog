@@ -340,10 +340,12 @@ h2 em {
 }
 
 .post h3 {
+  color: var(--ink);
   font-size: 25px;
   line-height: 1.1;
   letter-spacing: -0.025em;
   margin: 13px 0 9px;
+  transition: color 0.35s;
 }
 
 .feature-post h3 {
