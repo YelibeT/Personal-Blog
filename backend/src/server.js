@@ -8,6 +8,7 @@ import postRoutes from "./routes/postRoutes.js";
 import adminPostRoutes from "./routes/adminPostRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import profileRoutes from "./routes/profileRoutes.js";
+import attachmentRoutes from "./routes/attachmentRoutes.js";
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use("/api/posts", postRoutes);
 app.use("/api/admin/posts", adminPostRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/admin/profile", profileRoutes);
+app.use("/api/attachments", attachmentRoutes);
 
 
 app.get(["/admin", "/admin/"], (req, res) => {

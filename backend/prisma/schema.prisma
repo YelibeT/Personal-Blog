@@ -35,6 +35,16 @@ model Post {
   author     User     @relation(fields: [authorId], references: [id])
 }
 
+model Attachment {
+  id        Int      @id @default(autoincrement())
+  fileName  String
+  fileUrl   String
+  fileType  String
+  fileSize  Int
+  createdAt DateTime @default(now())
+  postId    Int
+}
+
 enum Role {
   ADMIN
 }
