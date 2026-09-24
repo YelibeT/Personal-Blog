@@ -39,10 +39,12 @@ export const uploadProfileImage = async (req, res) => {
       profileImage: user.profileImage
     });
   } catch (error) {
-    console.error(error);
+        console.error("PROFILE IMAGE UPLOAD ERROR:", error);
 
-    res.status(500).json({
-      error: "Failed to upload profile image."
-    });
-  }
+        res.status(500).json({
+            error: "Failed to upload profile image.",
+            message: error.message,
+            code: error.code
+        });
+}
 };
