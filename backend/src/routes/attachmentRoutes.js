@@ -1,7 +1,7 @@
 import express from "express";
 
-import authenticate from "../middleware/authenticate.js";
-import authorizeAdmin from "../middleware/authorizeAdmin.js";
+import {authenticate }from "../middleware/authenticate.js";
+import {authorizeAdmin} from "../middleware/authorizeAdmin.js";
 import fileUpload from "../middleware/fileUpload.js";
 
 import {
