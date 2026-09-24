@@ -244,14 +244,7 @@ function Home({
         >
           <div className="intro-layout">
 
-            <div className="intro-visual">
-              <div className="profile-card">
-                <img
-                  src={authorProfileImage}
-                  alt="Biniyam Abebe"
-                />
-              </div>
-            </div>
+            
 
             <div className="intro-content">
               <p className="eyebrow">
