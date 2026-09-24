@@ -11,13 +11,18 @@ export const getPosts = async (req, res) => {
                 createdAt: "desc"
             },
             include: {
-                author: {
-                    select: {
-                        username: true,
-                        profileImage: true
-                    }
-                }
-            }
+  author: {
+    select: {
+      username: true,
+      profileImage: true
+    }
+  },
+  attachments: {
+    orderBy: {
+      createdAt: "asc"
+    }
+  }
+}
         });
 
         res.status(200).json(posts);

@@ -1,177 +1,178 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "./services/api";
 
-function PostPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+function PostPage({
+  draft,
+  onPostSaved,
+  onBack
+}) {
+  const [title, setTitle] = useState(
+    draft?.title || ""
+  );
 
-  const editing = Boolean(id);
+  const [category, setCategory] = useState(
+    draft?.category || "Personal"
+  );
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("Personal");
-  const [excerpt, setExcerpt] = useState("");
-  const [published, setPublished] = useState(false);
+  const [excerpt, setExcerpt] = useState(
+    draft?.excerpt || ""
+  );
 
-  const [coverImage, setCoverImage] = useState("");
-  const [coverImageFile, setCoverImageFile] = useState(null);
+  const [body, setBody] = useState(
+    draft?.content || ""
+  );
 
+  const [coverImage, setCoverImage] = useState(null);
+
+  // Newly selected files
   const [attachments, setAttachments] = useState([]);
-  const [selectedFiles, setSelectedFiles] = useState([]);
 
-  const [loading, setLoading] = useState(editing);
+  // Files already uploaded for this post
+  const [existingAttachments, setExistingAttachments] =
+    useState([]);
+
+  const [saveStatus, setSaveStatus] = useState("");
+
   const [saving, setSaving] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
-  const [uploadingAttachments, setUploadingAttachments] = useState(false);
 
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [uploadingAttachments, setUploadingAttachments] =
+    useState(false);
 
+  /*
+   * Load existing attachments when editing a post.
+   */
   useEffect(() => {
-    if (!editing) {
+    if (!draft?.id) {
       return;
     }
 
-    const loadPost = async () => {
+    const loadAttachments = async () => {
       try {
-        const response = await apiFetch(`/admin/posts/${id}`);
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to load post.");
-        }
-
-        setTitle(data.title || "");
-        setContent(data.content || "");
-        setCategory(data.category || "Personal");
-        setExcerpt(data.excerpt || "");
-        setPublished(data.published || false);
-        setCoverImage(data.coverImage || "");
-
-        const attachmentsResponse = await apiFetch(
-          `/attachments/post/${id}`
+        const response = await apiFetch(
+          `/attachments/post/${draft.id}`
         );
-
-        const attachmentsData = await attachmentsResponse.json();
-
-        if (attachmentsResponse.ok) {
-          setAttachments(attachmentsData);
-        }
-      } catch (requestError) {
-        setError(requestError.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPost();
-  }, [id, editing]);
-
-  const handleCoverImageChange = (event) => {
-    setCoverImageFile(event.target.files[0] || null);
-  };
-
-  const uploadCoverImage = async () => {
-    if (!coverImageFile) {
-      return coverImage;
-    }
-
-    setUploadingCover(true);
-
-    try {
-      const formData = new FormData();
-      formData.append("image", coverImageFile);
-
-      const response = await apiFetch("/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to upload cover image."
-        );
-      }
-
-      setCoverImage(data.imageUrl);
-      setCoverImageFile(null);
-
-      return data.imageUrl;
-    } finally {
-      setUploadingCover(false);
-    }
-  };
-
-  const handleAttachmentSelection = (event) => {
-    const files = Array.from(event.target.files || []);
-
-    setSelectedFiles((currentFiles) => [
-      ...currentFiles,
-      ...files
-    ]);
-
-    event.target.value = "";
-  };
-
-  const removeSelectedFile = (index) => {
-    setSelectedFiles((currentFiles) =>
-      currentFiles.filter((_, fileIndex) => fileIndex !== index)
-    );
-  };
-
-  const uploadAttachments = async (postId) => {
-    if (selectedFiles.length === 0) {
-      return;
-    }
-
-    setUploadingAttachments(true);
-
-    try {
-      for (const file of selectedFiles) {
-        const formData = new FormData();
-
-        formData.append("file", file);
-        formData.append("postId", postId);
-
-        const response = await apiFetch("/attachments", {
-          method: "POST",
-          body: formData
-        });
 
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
             data.error ||
-              `Failed to upload ${file.name}.`
+              "Failed to load attachments"
           );
         }
 
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          data
-        ]);
+        setExistingAttachments(data);
+      } catch (error) {
+        console.error(
+          "Failed to load attachments:",
+          error
+        );
       }
+    };
 
-      setSelectedFiles([]);
-    } finally {
-      setUploadingAttachments(false);
-    }
+    loadAttachments();
+  }, [draft?.id]);
+
+  /*
+   * Cover image selection.
+   */
+  const handleCoverChange = (event) => {
+    setCoverImage(
+      event.target.files[0] || null
+    );
   };
 
-  const deleteExistingAttachment = async (attachmentId) => {
-    const confirmed = window.confirm(
-      "Remove this attachment?"
+  /*
+   * Attachment selection.
+   *
+   * Files are NOT uploaded here.
+   * They are only stored in browser state.
+   */
+  const handleAttachmentChange = (event) => {
+    const selectedFiles = Array.from(
+      event.target.files || []
     );
 
-    if (!confirmed) {
-      return;
+    const allowedExtensions = [
+      ".pdf",
+      ".doc",
+      ".docx",
+      ".txt",
+      ".zip"
+    ];
+
+    const maxSize =
+      20 * 1024 * 1024;
+
+    const validFiles = [];
+    const rejectedFiles = [];
+
+    for (const file of selectedFiles) {
+      const fileName =
+        file.name.toLowerCase();
+
+      const isAllowedType =
+        allowedExtensions.some(
+          (extension) =>
+            fileName.endsWith(extension)
+        );
+
+      const isAllowedSize =
+        file.size <= maxSize;
+
+      if (
+        isAllowedType &&
+        isAllowedSize
+      ) {
+        validFiles.push(file);
+      } else {
+        rejectedFiles.push(file.name);
+      }
     }
 
+    if (rejectedFiles.length > 0) {
+      setSaveStatus(
+        "Some files were rejected. Only PDF, DOC, DOCX, TXT, and ZIP files up to 20 MB are allowed."
+      );
+    }
+
+    setAttachments(
+      (currentFiles) => [
+        ...currentFiles,
+        ...validFiles
+      ]
+    );
+
+    // Allows selecting the same file again.
+    event.target.value = "";
+  };
+
+  /*
+   * Remove a file that has not been uploaded yet.
+   */
+  const removeSelectedAttachment = (
+    index
+  ) => {
+    setAttachments(
+      (currentFiles) =>
+        currentFiles.filter(
+          (_, fileIndex) =>
+            fileIndex !== index
+        )
+    );
+  };
+
+  /*
+   * Delete an attachment that already exists.
+   */
+  const deleteExistingAttachment = async (
+    attachmentId
+  ) => {
     try {
+      setSaveStatus(
+        "Removing attachment..."
+      );
+
       const response = await apiFetch(
         `/attachments/${attachmentId}`,
         {
@@ -179,399 +180,619 @@ function PostPage() {
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Failed to delete attachment."
+          data.error ||
+            "Failed to remove attachment"
         );
       }
 
-      setAttachments((currentAttachments) =>
-        currentAttachments.filter(
-          (attachment) => attachment.id !== attachmentId
-        )
+      setExistingAttachments(
+        (currentAttachments) =>
+          currentAttachments.filter(
+            (attachment) =>
+              attachment.id !==
+              attachmentId
+          )
       );
-    } catch (requestError) {
-      setError(requestError.message);
+
+      setSaveStatus("");
+    } catch (error) {
+      console.error(
+        "Failed to delete attachment:",
+        error
+      );
+
+      setSaveStatus(
+        error.message ||
+          "Failed to remove attachment"
+      );
     }
   };
 
-  const savePost = async (event) => {
-    event.preventDefault();
+  /*
+   * Upload the cover image to Cloudinary.
+   */
+  const uploadCoverImage = async () => {
+    if (!coverImage) {
+      return (
+        draft?.coverImage ||
+        null
+      );
+    }
 
-    setSaving(true);
-    setMessage("");
-    setError("");
+    const formData =
+      new FormData();
+
+    formData.append(
+      "image",
+      coverImage
+    );
+
+    const response =
+      await apiFetch(
+        "/upload",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "Failed to upload cover image"
+      );
+    }
+
+    return data.imageUrl;
+  };
+
+  /*
+   * Upload all newly selected attachments.
+   *
+   * The post must already exist before this runs.
+   */
+  const uploadAttachments = async (
+    postId
+  ) => {
+    if (
+      attachments.length === 0
+    ) {
+      return;
+    }
+
+    setUploadingAttachments(
+      true
+    );
 
     try {
-      const uploadedCoverImage = await uploadCoverImage();
+      for (
+        const file of attachments
+      ) {
+        setSaveStatus(
+          `Uploading ${file.name}...`
+        );
 
-      const postData = {
-        title,
-        content,
-        category,
-        excerpt,
-        coverImage: uploadedCoverImage,
-        published
-      };
+        const formData =
+          new FormData();
 
-      const endpoint = editing
-        ? `/admin/posts/${id}`
-        : "/admin/posts";
+        formData.append(
+          "file",
+          file
+        );
 
-      const method = editing ? "PUT" : "POST";
+        formData.append(
+          "postId",
+          String(postId)
+        );
 
-      const response = await apiFetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(postData)
-      });
+        const response =
+          await apiFetch(
+            "/attachments",
+            {
+              method: "POST",
+              body: formData
+            }
+          );
 
-      const data = await response.json();
+        const data =
+          await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to save post."
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              `Failed to upload ${file.name}`
+          );
+        }
+
+        setExistingAttachments(
+          (currentAttachments) => [
+            ...currentAttachments,
+            data
+          ]
         );
       }
 
-      const postId = data.id;
+      setAttachments([]);
+    } finally {
+      setUploadingAttachments(
+        false
+      );
+    }
+  };
 
-      await uploadAttachments(postId);
+  /*
+   * Create or update the post.
+   */
+  const savePost = async (
+    published
+  ) => {
+    try {
+      setSaving(true);
 
-      setMessage(
-        editing
-          ? "Post updated successfully."
-          : "Post created successfully."
+      setSaveStatus(
+        published
+          ? "Publishing..."
+          : "Saving..."
       );
 
-      if (!editing) {
-        navigate(`/admin/posts/${postId}/edit`);
+      /*
+       * Upload cover image first.
+       */
+      const imageUrl =
+        await uploadCoverImage();
+
+      const postData = {
+        title: title.trim(),
+        category,
+        excerpt: excerpt.trim(),
+        content: body.trim(),
+        coverImage: imageUrl,
+        published
+      };
+
+      let response;
+
+      /*
+       * Update existing post.
+       */
+      if (draft?.id) {
+        response =
+          await apiFetch(
+            `/admin/posts/${draft.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify(
+                postData
+              )
+            }
+          );
       }
-    } catch (requestError) {
-      setError(requestError.message);
+
+      /*
+       * Create new post.
+       */
+      else {
+        response =
+          await apiFetch(
+            "/admin/posts",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify(
+                postData
+              )
+            }
+          );
+      }
+
+      const data =
+        await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Failed to save post"
+        );
+      }
+
+      /*
+       * Now the post definitely exists.
+       *
+       * Attachments can safely be linked to it.
+       */
+      await uploadAttachments(
+        data.id
+      );
+
+      onPostSaved(data);
+
+      setSaveStatus(
+        published
+          ? "Published"
+          : "Draft saved"
+      );
+
+      setTimeout(() => {
+        onBack();
+      }, 700);
+    } catch (error) {
+      console.error(
+        "Failed to save post:",
+        error
+      );
+
+      setSaveStatus(
+        error.message ||
+          "Something went wrong"
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return (
-      <main className="admin-main">
-        <div className="empty-admin">
-          <strong>Loading post...</strong>
-        </div>
-      </main>
+  /*
+   * Decide whether the user wants
+   * to save a draft or publish.
+   */
+  const handleSubmit = async (
+    event
+  ) => {
+    event.preventDefault();
+
+    if (
+      !title.trim() ||
+      !excerpt.trim() ||
+      !body.trim()
+    ) {
+      setSaveStatus(
+        "Title, description, and story are required."
+      );
+
+      return;
+    }
+
+    const action =
+      event.nativeEvent
+        .submitter?.value;
+
+    await savePost(
+      action === "publish"
     );
-  }
+  };
 
   return (
-    <main className="admin-main post-page">
-      <div className="admin-heading">
-        <div>
-          <p className="eyebrow">
-            {editing ? "Edit article" : "New article"}
-          </p>
+    <div className="admin-page-content">
+      <main className="post-editor-page">
 
-          <h1>
-            {editing ? "Edit Post" : "Create Post"}
-          </h1>
-
-          <p className="admin-subtitle">
-            Write your story and manage its files separately.
-          </p>
-        </div>
-      </div>
-
-      {(error || message) && (
-        <div
-          className={
-            error
-              ? "empty-admin post-feedback error"
-              : "empty-admin post-feedback"
-          }
+        <button
+          className="back-link"
+          onClick={onBack}
+          type="button"
         >
-          <strong>{error || message}</strong>
-        </div>
-      )}
+          ← Back to dashboard
+        </button>
 
-      <form
-        className="post-form"
-        onSubmit={savePost}
-      >
-        <section className="form-section">
-          <h2>Story</h2>
+        <div className="editor-heading">
+          <div>
+            <p className="eyebrow">
+              Create something worth reading
+            </p>
 
-          <label className="form-group">
-            <span>Title</span>
-
-            <input
-              value={title}
-              onChange={(event) =>
-                setTitle(event.target.value)
-              }
-              placeholder="Post title"
-              required
-            />
-          </label>
-
-          <label className="form-group">
-            <span>Category</span>
-
-            <input
-              value={category}
-              onChange={(event) =>
-                setCategory(event.target.value)
-              }
-              placeholder="Personal"
-            />
-          </label>
-
-          <label className="form-group">
-            <span>Excerpt</span>
-
-            <textarea
-              value={excerpt}
-              onChange={(event) =>
-                setExcerpt(event.target.value)
-              }
-              placeholder="Short description of the post"
-              rows="3"
-            />
-          </label>
-
-          <label className="form-group">
-            <span>Content</span>
-
-            <textarea
-              className="post-content-editor"
-              value={content}
-              onChange={(event) =>
-                setContent(event.target.value)
-              }
-              placeholder="Write your story here..."
-              rows="18"
-              required
-            />
-          </label>
-        </section>
-
-        <section className="form-section">
-          <h2>Cover image</h2>
-
-          {coverImage && (
-            <img
-              src={coverImage}
-              alt="Post cover"
-              className="post-cover-preview"
-            />
-          )}
-
-          <label className="form-group">
-            <span>Choose cover image</span>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleCoverImageChange}
-            />
-
-            <small>
-              JPG, PNG, or WebP up to 5 MB.
-            </small>
-
-            {coverImageFile && (
-              <small>
-                Selected: {coverImageFile.name}
-              </small>
-            )}
-          </label>
-        </section>
-
-        <section className="form-section attachments-section">
-          <div className="section-heading-row">
-            <div>
-              <h2>Attachments</h2>
-
-              <p className="section-description">
-                Add files readers can download separately
-                from your story.
-              </p>
-            </div>
+            <h1>
+              {draft
+                ? "Edit post"
+                : "New post"}
+            </h1>
           </div>
 
-          <label className="attachment-picker">
-            <span className="attachment-picker-title">
-              Choose files
-            </span>
-
-            <span className="attachment-picker-description">
-              PDF, DOC, DOCX, TXT, or ZIP up to 20 MB each.
-            </span>
-
-            <input
-              type="file"
-              multiple
-              onChange={handleAttachmentSelection}
-              accept=".pdf,.doc,.docx,.txt,.zip"
-            />
-          </label>
-
-          {selectedFiles.length > 0 && (
-            <div className="attachment-list">
-              <h3>Ready to upload</h3>
-
-              {selectedFiles.map((file, index) => (
-                <div
-                  className="attachment-item"
-                  key={`${file.name}-${index}`}
-                >
-                  <div className="attachment-info">
-                    <strong>{file.name}</strong>
-
-                    <span>
-                      {formatFileSize(file.size)}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="attachment-remove"
-                    onClick={() =>
-                      removeSelectedFile(index)
-                    }
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {attachments.length > 0 && (
-            <div className="attachment-list">
-              <h3>Attached files</h3>
-
-              {attachments.map((attachment) => (
-                <div
-                  className="attachment-item"
-                  key={attachment.id}
-                >
-                  <div className="attachment-info">
-                    <a
-                      href={attachment.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {attachment.fileName}
-                    </a>
-
-                    <span>
-                      {formatFileSize(
-                        attachment.fileSize
-                      )}
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="attachment-remove"
-                    onClick={() =>
-                      deleteExistingAttachment(
-                        attachment.id
-                      )
-                    }
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {uploadingAttachments && (
-            <p className="attachment-status">
-              Uploading attachments...
-            </p>
-          )}
-        </section>
-
-        <section className="form-section">
-          <h2>Publishing</h2>
-
-          <label className="publish-toggle">
-            <input
-              type="checkbox"
-              checked={published}
-              onChange={(event) =>
-                setPublished(event.target.checked)
-              }
-            />
-
-            <span>
-              Publish this post
-            </span>
-          </label>
-        </section>
-
-        <div className="form-actions">
-          <button
-            className="secondary-action"
-            type="button"
-            onClick={() => navigate("/admin")}
-          >
-            Cancel
-          </button>
-
-          <button
-            className="primary-action"
-            type="submit"
-            disabled={
-              saving ||
-              uploadingCover ||
-              uploadingAttachments
-            }
-          >
-            {uploadingCover
-              ? "Uploading cover..."
-              : uploadingAttachments
-                ? "Uploading files..."
-                : saving
-                  ? "Saving..."
-                  : editing
-                    ? "Save changes"
-                    : "Create post"}
-          </button>
+          <span className="editor-status">
+            {saveStatus ||
+              "Unsaved"}
+          </span>
         </div>
-      </form>
-    </main>
+
+        <form
+          className="post-editor"
+          onSubmit={handleSubmit}
+        >
+
+          <section className="editor-main">
+
+            <label className="editor-field">
+              <span>Title</span>
+
+              <input
+                value={title}
+                required
+                onChange={(event) =>
+                  setTitle(
+                    event.target.value
+                  )
+                }
+                placeholder="Give your post a name"
+              />
+            </label>
+
+            <label className="editor-field">
+              <span>
+                Short description
+              </span>
+
+              <textarea
+                value={excerpt}
+                required
+                onChange={(event) =>
+                  setExcerpt(
+                    event.target.value
+                  )
+                }
+                placeholder="What is this post about?"
+                rows="3"
+              />
+            </label>
+
+            <label className="editor-field">
+              <span>Story</span>
+
+              <textarea
+                className="story-input"
+                value={body}
+                required
+                onChange={(event) =>
+                  setBody(
+                    event.target.value
+                  )
+                }
+                placeholder="Start writing here..."
+                rows="14"
+              />
+            </label>
+
+          </section>
+
+          <aside className="editor-sidebar">
+
+            <section className="editor-panel">
+              <h2>
+                Post settings
+              </h2>
+
+              <label className="editor-field">
+                <span>
+                  Category
+                </span>
+
+                <select
+                  value={category}
+                  onChange={(event) =>
+                    setCategory(
+                      event.target.value
+                    )
+                  }
+                >
+                  <option>
+                    Personal
+                  </option>
+
+                  <option>
+                    Notes
+                  </option>
+
+                  <option>
+                    Medicine
+                  </option>
+
+                  <option>
+                    Learning
+                  </option>
+                </select>
+              </label>
+            </section>
+
+            <section className="editor-panel">
+              <h2>
+                Cover image
+              </h2>
+
+              <label className="upload-control">
+                <span>
+                  {coverImage
+                    ? coverImage.name
+                    : draft?.coverImage
+                      ? "Current cover image"
+                      : "Choose an image"}
+                </span>
+
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={
+                    handleCoverChange
+                  }
+                />
+              </label>
+
+              <small>
+                JPG, PNG, or WebP up to 5 MB.
+              </small>
+
+              {coverImage && (
+                <small>
+                  Image will be uploaded when you save the post.
+                </small>
+              )}
+            </section>
+
+            <section className="editor-panel">
+              <h2>
+                Attachments
+              </h2>
+
+              <label className="upload-control">
+                <span>
+                  ＋ Add files
+                </span>
+
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.txt,.zip"
+                  onChange={
+                    handleAttachmentChange
+                  }
+                />
+              </label>
+
+              <small>
+                PDF, DOC, DOCX, TXT, or ZIP up to 20 MB each.
+              </small>
+
+              {attachments.length >
+                0 && (
+                <>
+                  <small>
+                    Ready to upload
+                  </small>
+
+                  <ul className="attachment-list">
+                    {attachments.map(
+                      (
+                        file,
+                        index
+                      ) => (
+                        <li
+                          key={`${file.name}-${index}`}
+                        >
+                          <span>
+                            {file.name}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeSelectedAttachment(
+                                index
+                              )
+                            }
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </>
+              )}
+
+              {existingAttachments.length >
+                0 && (
+                <>
+                  <small>
+                    Attached files
+                  </small>
+
+                  <ul className="attachment-list">
+                    {existingAttachments.map(
+                      (
+                        attachment
+                      ) => (
+                        <li
+                          key={
+                            attachment.id
+                          }
+                        >
+                          <a
+                            href={
+                              attachment.fileUrl
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {
+                              attachment.fileName
+                            }
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              deleteExistingAttachment(
+                                attachment.id
+                              )
+                            }
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </>
+              )}
+
+              {uploadingAttachments && (
+                <small>
+                  Uploading files...
+                </small>
+              )}
+            </section>
+
+            <div className="editor-actions">
+
+              <button
+                className="secondary-action"
+                type="submit"
+                name="action"
+                value="draft"
+                disabled={
+                  saving ||
+                  uploadingAttachments
+                }
+              >
+                {saving
+                  ? "Saving..."
+                  : "Save as draft"}
+              </button>
+
+              <button
+                className="primary-action editor-submit"
+                type="submit"
+                name="action"
+                value="publish"
+                disabled={
+                  saving ||
+                  uploadingAttachments
+                }
+              >
+                {saving
+                  ? "Please wait..."
+                  : draft?.published
+                    ? "Update post"
+                    : "Post"}
+              </button>
+
+            </div>
+
+          </aside>
+        </form>
+      </main>
+    </div>
   );
-}
-
-function formatFileSize(bytes) {
-  if (!bytes) {
-    return "0 Bytes";
-  }
-
-  const units = [
-    "Bytes",
-    "KB",
-    "MB",
-    "GB"
-  ];
-
-  const index = Math.floor(
-    Math.log(bytes) / Math.log(1024)
-  );
-
-  const size = bytes / Math.pow(1024, index);
-
-  return `${size.toFixed(index === 0 ? 0 : 1)} ${
-    units[index]
-  }`;
 }
 
 export default PostPage;
