@@ -175,6 +175,47 @@ footer a:hover {
   position: relative;
 }
 
+.intro-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.15fr);
+  align-items: center;
+  gap: 54px;
+}
+
+.intro-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.profile-card {
+  position: relative;
+  width: min(440px, 100%);
+  aspect-ratio: 0.9;
+  border: 1px solid var(--line);
+  border-radius: 28px 28px 28px 100px;
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: 18px 18px 0 rgba(231, 98, 79, 0.12);
+}
+
+.profile-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(0.85) contrast(1.02);
+}
+
+.intro-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: right;
+  max-width: 620px;
+  margin-left: auto;
+}
+
 .eyebrow {
   color: var(--accent);
   text-transform: uppercase;
@@ -210,11 +251,12 @@ h2 em {
 }
 
 .intro-copy {
-  max-width: 375px;
+  max-width: 440px;
   line-height: 1.65;
   color: var(--muted);
   font-size: 15px;
   margin: 35px 0 24px;
+  text-align: right;
 }
 
 .text-link {
@@ -1394,6 +1436,22 @@ footer i {
   .intro {
     min-height: 570px;
     padding-top: 88px;
+  }
+
+  .intro-layout {
+    grid-template-columns: minmax(120px, 0.72fr) minmax(0, 1.28fr);
+    gap: 20px;
+  }
+
+  .intro-content {
+    align-items: flex-end;
+    text-align: right;
+    margin-left: auto;
+    max-width: none;
+  }
+
+  .intro-copy {
+    text-align: right;
   }
 
   .intro-mark {

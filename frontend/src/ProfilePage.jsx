@@ -6,11 +6,16 @@ function ProfilePage({ onLogout }) {
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [profileImage, setProfileImage] = useState("");
+  const [profileImageFile, setProfileImageFile] = useState(null);
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -21,7 +26,9 @@ function ProfilePage({ onLogout }) {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to load profile");
+          throw new Error(
+            data.error || "Failed to load profile"
+          );
         }
 
         setProfile(data);
@@ -38,22 +45,82 @@ function ProfilePage({ onLogout }) {
     loadProfile();
   }, []);
 
+  const handleProfileImageChange = (event) => {
+    setProfileImageFile(
+      event.target.files[0] || null
+    );
+  };
+
+  const uploadProfileImage = async () => {
+    if (!profileImageFile) {
+      return profileImage;
+    }
+
+    setUploadingImage(true);
+
+    try {
+      const formData = new FormData();
+
+      formData.append("image", profileImageFile);
+
+      const response = await apiFetch(
+        "/admin/profile/image",
+        {
+          method: "PUT",
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+          "Failed to upload profile image"
+        );
+      }
+
+      setProfileImage(data.profileImage);
+      setProfileImageFile(null);
+
+      return data.profileImage;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const saveProfile = async (event) => {
     event.preventDefault();
+
     setSaving(true);
     setMessage("");
     setError("");
 
     try {
-      const response = await apiFetch("/auth/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ displayName, bio, profileImage })
-      });
+      const uploadedProfileImage =
+        await uploadProfileImage();
+
+      const response = await apiFetch(
+        "/auth/profile",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            displayName,
+            bio,
+            profileImage: uploadedProfileImage
+          })
+        }
+      );
+
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to save profile");
+        throw new Error(
+          data.error || "Failed to save profile"
+        );
       }
 
       setProfile(data);
@@ -67,25 +134,41 @@ function ProfilePage({ onLogout }) {
 
   const changePassword = async (event) => {
     event.preventDefault();
+
     setChangingPassword(true);
     setMessage("");
     setError("");
 
     try {
-      const response = await apiFetch("/auth/password", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword })
-      });
+      const response = await apiFetch(
+        "/auth/password",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            currentPassword,
+            newPassword
+          })
+        }
+      );
+
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to change password");
+        throw new Error(
+          data.error || "Failed to change password"
+        );
       }
 
       setCurrentPassword("");
       setNewPassword("");
-      setMessage("Password changed. Please sign in again.");
+
+      setMessage(
+        "Password changed. Please sign in again."
+      );
+
       await onLogout();
     } catch (requestError) {
       setError(requestError.message);
@@ -105,7 +188,13 @@ function ProfilePage({ onLogout }) {
   };
 
   if (loading) {
-    return <main className="admin-main"><div className="empty-admin"><strong>Loading profile...</strong></div></main>;
+    return (
+      <main className="admin-main">
+        <div className="empty-admin">
+          <strong>Loading profile...</strong>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -113,78 +202,176 @@ function ProfilePage({ onLogout }) {
       <div className="admin-heading">
         <div>
           <p className="eyebrow">Your account</p>
+
           <h1>Profile</h1>
-          <p className="admin-subtitle">Manage how you appear on the blog.</p>
+
+          <p className="admin-subtitle">
+            Manage how you appear on the blog.
+          </p>
         </div>
       </div>
 
       {(error || message) && (
-        <div className={error ? "empty-admin profile-feedback error" : "empty-admin profile-feedback"}>
+        <div
+          className={
+            error
+              ? "empty-admin profile-feedback error"
+              : "empty-admin profile-feedback"
+          }
+        >
           <strong>{error || message}</strong>
         </div>
       )}
 
-      <form className="profile-form" onSubmit={saveProfile}>
+      <form
+        className="profile-form"
+        onSubmit={saveProfile}
+      >
         <section className="form-section profile-identity">
           <h2>Public profile</h2>
+
           <div className="profile-picture-wrap">
             {profileImage ? (
-              <img src={profileImage} alt="Current profile" className="profile-picture" />
+              <img
+                src={profileImage}
+                alt="Current profile"
+                className="profile-picture"
+              />
             ) : (
               <span className="profile-picture profile-picture-placeholder">
-                {(displayName || profile?.username || "A").charAt(0).toUpperCase()}
+                {(
+                  displayName ||
+                  profile?.username ||
+                  "A"
+                )
+                  .charAt(0)
+                  .toUpperCase()}
               </span>
             )}
           </div>
+
           <label className="form-group">
-            <span>Profile picture URL</span>
+            <span>Profile picture</span>
+
             <input
-              type="url"
-              value={profileImage}
-              onChange={(event) => setProfileImage(event.target.value)}
-              placeholder="https://example.com/profile.jpg"
+              type="file"
+              accept="image/*"
+              onChange={handleProfileImageChange}
             />
-            <small>Image storage is not configured; save a hosted image URL or reference.</small>
+
+            <small>
+              JPG, PNG, or WebP up to 5 MB.
+            </small>
+
+            {profileImageFile && (
+              <small>
+                Selected: {profileImageFile.name}
+              </small>
+            )}
           </label>
+
           <label className="form-group">
             <span>Display name</span>
-            <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Your name" />
+
+            <input
+              value={displayName}
+              onChange={(event) =>
+                setDisplayName(event.target.value)
+              }
+              placeholder="Your name"
+            />
           </label>
+
           <label className="form-group">
             <span>Bio</span>
-            <textarea value={bio} onChange={(event) => setBio(event.target.value)} placeholder="Tell readers about yourself" rows="5" />
+
+            <textarea
+              value={bio}
+              onChange={(event) =>
+                setBio(event.target.value)
+              }
+              placeholder="Tell readers about yourself"
+              rows="5"
+            />
           </label>
         </section>
 
         <section className="form-section">
           <h2>Account</h2>
+
           <dl className="profile-account-details">
-            <div><dt>Email</dt><dd>{profile?.email}</dd></div>
-            <div><dt>Username</dt><dd>{profile?.username}</dd></div>
+            <div>
+              <dt>Email</dt>
+              <dd>{profile?.email}</dd>
+            </div>
+
+            <div>
+              <dt>Username</dt>
+              <dd>{profile?.username}</dd>
+            </div>
           </dl>
         </section>
 
         <div className="form-actions">
-          <button className="primary-action" type="submit" disabled={saving}>
-            {saving ? "Saving..." : "Save changes"}
+          <button
+            className="primary-action"
+            type="submit"
+            disabled={saving || uploadingImage}
+          >
+            {uploadingImage
+              ? "Uploading image..."
+              : saving
+                ? "Saving..."
+                : "Save changes"}
           </button>
         </div>
       </form>
 
-      <form className="profile-form profile-security" onSubmit={changePassword}>
+      <form
+        className="profile-form profile-security"
+        onSubmit={changePassword}
+      >
         <section className="form-section">
           <h2>Security</h2>
+
           <label className="form-group">
             <span>Current password</span>
-            <input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} required autoComplete="current-password" />
+
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(event) =>
+                setCurrentPassword(event.target.value)
+              }
+              required
+              autoComplete="current-password"
+            />
           </label>
+
           <label className="form-group">
             <span>New password</span>
-            <input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} minLength="8" required autoComplete="new-password" />
+
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(event) =>
+                setNewPassword(event.target.value)
+              }
+              minLength="8"
+              required
+              autoComplete="new-password"
+            />
           </label>
+
           <div className="form-actions">
-            <button className="secondary-action" type="submit" disabled={changingPassword}>
-              {changingPassword ? "Changing..." : "Change password"}
+            <button
+              className="secondary-action"
+              type="submit"
+              disabled={changingPassword}
+            >
+              {changingPassword
+                ? "Changing..."
+                : "Change password"}
             </button>
           </div>
         </section>
@@ -192,7 +379,14 @@ function ProfilePage({ onLogout }) {
 
       <section className="profile-account-actions">
         <h2>Account access</h2>
-        <button className="quiet-action delete-action" type="button" onClick={verifyLogout}>Log out</button>
+
+        <button
+          className="quiet-action delete-action"
+          type="button"
+          onClick={verifyLogout}
+        >
+          Log out
+        </button>
       </section>
     </main>
   );

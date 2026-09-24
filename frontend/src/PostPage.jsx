@@ -5,7 +5,7 @@ function PostPage({
   draft,
   onPostSaved,
   onBack
-  }) {
+}) {
   const [title, setTitle] = useState(
     draft?.title || ""
   );
@@ -42,6 +42,31 @@ function PostPage({
     );
   };
 
+  const uploadCoverImage = async () => {
+    if (!coverImage) {
+      return draft?.coverImage || null;
+    }
+
+    const formData = new FormData();
+
+    formData.append("image", coverImage);
+
+    const response = await apiFetch("/upload", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "Failed to upload cover image"
+      );
+    }
+
+    return data.imageUrl;
+  };
+
   const savePost = async (published) => {
     try {
       setSaving(true);
@@ -52,11 +77,14 @@ function PostPage({
           : "Saving..."
       );
 
+      const imageUrl = await uploadCoverImage();
+
       const postData = {
         title: title.trim(),
         category,
         excerpt: excerpt.trim(),
         content: body.trim(),
+        coverImage: imageUrl,
         published
       };
 
@@ -124,8 +152,15 @@ function PostPage({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!title.trim() || !excerpt.trim() || !body.trim()) {
-      setSaveStatus("Title, description, and story are required.");
+    if (
+      !title.trim() ||
+      !excerpt.trim() ||
+      !body.trim()
+    ) {
+      setSaveStatus(
+        "Title, description, and story are required."
+      );
+
       return;
     }
 
@@ -139,10 +174,9 @@ function PostPage({
   };
 
   return (
-    <div
-      className="admin-page-content"
-    >
+    <div className="admin-page-content">
       <main className="post-editor-page">
+
         <button
           className="back-link"
           onClick={onBack}
@@ -172,7 +206,9 @@ function PostPage({
           className="post-editor"
           onSubmit={handleSubmit}
         >
+
           <section className="editor-main">
+
             <label className="editor-field">
               <span>Title</span>
 
@@ -214,9 +250,11 @@ function PostPage({
                 rows="14"
               />
             </label>
+
           </section>
 
           <aside className="editor-sidebar">
+
             <section className="editor-panel">
               <h2>Post settings</h2>
 
@@ -244,8 +282,9 @@ function PostPage({
                 <span>
                   {coverImage
                     ? coverImage.name
-                    : draft?.coverImage ||
-                      "Choose an image"}
+                    : draft?.coverImage
+                      ? "Current cover image"
+                      : "Choose an image"}
                 </span>
 
                 <input
@@ -258,6 +297,12 @@ function PostPage({
               <small>
                 JPG, PNG, or WebP up to 5 MB.
               </small>
+
+              {coverImage && (
+                <small>
+                  Image will be uploaded when you save the post.
+                </small>
+              )}
             </section>
 
             <section className="editor-panel">
@@ -285,6 +330,7 @@ function PostPage({
             </section>
 
             <div className="editor-actions">
+
               <button
                 className="secondary-action"
                 type="submit"
@@ -303,18 +349,19 @@ function PostPage({
                 name="action"
                 value="publish"
                 disabled={saving}
-                >
+              >
                 {saving
                   ? "Please wait..."
                   : draft?.published
                     ? "Update post"
                     : "Post"}
               </button>
+
             </div>
+
           </aside>
         </form>
       </main>
-
     </div>
   );
 }
