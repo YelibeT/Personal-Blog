@@ -30,10 +30,11 @@ export const uploadImage = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+  console.error("CLOUDINARY UPLOAD ERROR:", error);
 
-        res.status(500).json({
-            error: "Failed to upload image."
-        });
-    }
+  return res.status(500).json({
+    error: "Upload failed",
+    message: error.message
+  });
+}
 };
