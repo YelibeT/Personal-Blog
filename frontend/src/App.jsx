@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import {
   Link,
   Navigate,
@@ -9,7 +10,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import heroImage from "./assets/hero.png";
 import "./App.css";
 
 import ArticlePage from "./ArticlePage";
@@ -32,7 +32,7 @@ const stripPostFormatting = (value = "") =>
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/(^|\s)#{1,6}\s*/g, "$1")
-    .replace(/[\*\_\`>\~]/g, " ")
+    .replace(/[*\\*_`>~]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -142,18 +142,6 @@ function Home({
     );
   }, [posts, query]);
 
-  /*
-   * Use the author's uploaded profile image
-   * when one exists.
-   *
-   * If there is no uploaded image, use the
-   * existing hero image.
-   */
-  const authorProfileImage =
-    posts.find(
-      (post) => post.author?.profileImage
-    )?.author?.profileImage || heroImage;
-
   return (
     <div
       className={
@@ -235,17 +223,12 @@ function Home({
       </header>
 
       <main id="top">
-
         {/* ABOUT / HERO */}
-
         <section
           className="intro"
           id="about"
         >
           <div className="intro-layout">
-
-            
-
             <div className="intro-content">
               <p className="eyebrow">
                 WRITER & MED-STUDENT
@@ -298,7 +281,6 @@ function Home({
         </section>
 
         {/* SELECTED WRITING */}
-
         <section
           className="writing-section"
           id="writing"
@@ -375,38 +357,6 @@ function Home({
                       </p>
 
                       <div className="post-footer">
-
-                        <div className="post-author">
-                          {post.author
-                            ?.profileImage ? (
-                            <img
-                              src={
-                                post
-                                  .author
-                                  .profileImage
-                              }
-                              alt=""
-                              className="post-author-avatar"
-                            />
-                          ) : (
-                            <span className="post-author-avatar post-author-placeholder">
-                              {(
-                                post.author
-                                  ?.username ||
-                                "B"
-                              )
-                                .charAt(0)
-                                .toUpperCase()}
-                            </span>
-                          )}
-
-                          <span>
-                            {post.author
-                              ?.username ||
-                              "Biniyam Abebe"}
-                          </span>
-                        </div>
-
                         <span>
                           {Math.max(
                             1,
@@ -453,7 +403,6 @@ function Home({
         </section>
 
         {/* SOCIAL */}
-
         <section
           className="social-section"
           id="social"
@@ -471,7 +420,6 @@ function Home({
           </div>
 
           <div className="social-links">
-
             <a
               href="https://www.tiktok.com/@binu_abebe"
               target="_blank"
@@ -534,7 +482,6 @@ function Home({
 
               <b>↗</b>
             </a>
-
           </div>
         </section>
       </main>
@@ -595,8 +542,7 @@ function AdminLoginRoute({
   darkMode,
   onToggleTheme
 }) {
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
   if (!authReady) {
     return (
@@ -665,7 +611,6 @@ function AdminContent({
 
   return (
     <Routes>
-
       <Route
         index
         element={
@@ -844,7 +789,6 @@ function AdminContent({
           />
         }
       />
-
     </Routes>
   );
 }
