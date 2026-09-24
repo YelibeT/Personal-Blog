@@ -9,6 +9,14 @@ export const getPosts = async (req, res) => {
             },
             orderBy: {
                 createdAt: "desc"
+            },
+            include: {
+                author: {
+                    select: {
+                        username: true,
+                        profileImage: true
+                    }
+                }
             }
         });
 
@@ -32,6 +40,14 @@ export const getPost = async (req, res) => {
             where: {
                 id: parseInt(id),
                 published: true
+            },
+            include: {
+                author: {
+                    select: {
+                        username: true,
+                        profileImage: true
+                    }
+                }
             }
         });
 
@@ -85,21 +101,29 @@ export const createPost = async (req, res) => {
         res.status(201).json(post);
 
     } catch (error) {
-        console.error("GET POSTS ERROR:", error);
+        console.error("CREATE POST ERROR:", error);
 
         res.status(500).json({
-            error: "Failed to fetch posts",
+            error: "Failed to create post",
             code: error.code,
             message: error.message
         });
-}
+    }
 };
 
 // UPDATE post - Admin only
 export const updatePost = async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, content } = req.body;
+
+        const {
+            title,
+            content,
+            category,
+            excerpt,
+            coverImage,
+            published
+        } = req.body;
 
         if (!title || !content) {
             return res.status(400).json({
@@ -113,11 +137,24 @@ export const updatePost = async (req, res) => {
             },
             data: {
                 title,
-                content
+                content,
+                category,
+                excerpt,
+                coverImage,
+                published
+            },
+            include: {
+                author: {
+                    select: {
+                        username: true,
+                        profileImage: true
+                    }
+                }
             }
         });
 
         res.status(200).json(post);
+
     } catch (error) {
         console.error(error);
 
@@ -133,28 +170,38 @@ export const updatePost = async (req, res) => {
     }
 };
 
-// PUBLISH / UNPUBLISH post - Admin only
-
-
+// GET published posts
 export const getPublishedPosts = async (req, res) => {
-  try {
-    const posts = await prisma.post.findMany({
-      where: {
-        published: true
-      },
-      orderBy: {
-        createdAt: "desc"
-      }
-    });
+    try {
+        const posts = await prisma.post.findMany({
+            where: {
+                published: true
+            },
+            orderBy: {
+                createdAt: "desc"
+            },
+            include: {
+                author: {
+                    select: {
+                        username: true,
+                        profileImage: true
+                    }
+                }
+            }
+        });
 
-    res.status(200).json(posts);
-  } catch (error) {
-    console.error("Failed to fetch published posts:", error);
+        res.status(200).json(posts);
 
-    res.status(500).json({
-      error: "Failed to fetch posts"
-    });
-  }
+    } catch (error) {
+        console.error(
+            "Failed to fetch published posts:",
+            error
+        );
+
+        res.status(500).json({
+            error: "Failed to fetch posts"
+        });
+    }
 };
 
 // DELETE post - Admin only
@@ -171,6 +218,7 @@ export const deletePost = async (req, res) => {
         res.status(200).json({
             message: "Post deleted successfully"
         });
+
     } catch (error) {
         console.error(error);
 

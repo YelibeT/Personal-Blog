@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import adminPostRoutes from "./routes/adminPostRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+import profileRoutes from "./routes/profileRoutes.js";
 
 const app = express();
 
@@ -36,6 +38,9 @@ app.options(/.*/, cors(corsOptions));
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/admin/posts", adminPostRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use("/api/admin/profile", profileRoutes);
+
 
 app.get(["/admin", "/admin/"], (req, res) => {
   const frontendUrl =
