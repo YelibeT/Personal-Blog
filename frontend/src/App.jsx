@@ -1,30 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-
-import {
-  Link,
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import {Link, Route, Routes, useLocation, useNavigate} from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminLoginRoute from "./components/AdminLoginRoute";
+import AdminContent from "./components/AdminContent";
+import ArticlePage from "./pages/ArticlePage";
+import AdminLayout from "./pages/AdminLayout";
+import {fetchPublishedPosts, logout, refreshAccessToken} from "./services/api";
 
 import "./App.css";
-
-import ArticlePage from "./pages/ArticlePage";
-import Admin from "./pages/Admin";
-import AdminLayout from "./pages/AdminLayout";
-import AdminLogin from "./pages/AdminLogin";
-import DraftsPage from "./pages/DraftsPage";
-import PostPage from "./pages/PostPage";
-import ProfilePage from "./pages/ProfilePage";
-
-import {
-  fetchPublishedPosts,
-  logout,
-  refreshAccessToken,
-} from "./services/api";
 
 const stripPostFormatting = (value = "") =>
   value
@@ -339,163 +322,6 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
   );
 }
 
-function ProtectedRoute({
-  isAdmin,
-  authReady
-}) {
-  if (!authReady) {
-    return (
-      <div className="site">
-        <main className="admin-main">
-          <p>Restoring admin session...</p>
-        </main>
-      </div>
-    );
-  }
-
-  return isAdmin ? (
-    <Outlet />
-  ) : (
-    <Navigate
-      to="/admin"
-      replace
-    />
-  );
-}
-
-function AdminLoginRoute({
-  isAdmin,
-  authReady,
-  onLogin,
-  darkMode,
-  onToggleTheme
-}) {
-  const navigate = useNavigate();
-
-  if (!authReady) {
-    return (
-      <div className="site">
-        <main className="admin-main">
-          <p>Restoring admin session...</p>
-        </main>
-      </div>
-    );
-  }
-
-  if (isAdmin) {
-    return (
-      <Navigate to="/admin/dashboard" replace/>
-    );
-  }
-
-  return (
-    <AdminLogin onLogin={() => {onLogin();
-      navigate("/admin/dashboard",
-          {
-            replace: true
-          }
-        );
-      }}
-      onBack={() =>navigate("/")}
-      darkMode={darkMode}
-      onToggleTheme={onToggleTheme}
-    />
-  );
-}
-
-function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
-
-  const navigate = useNavigate();
-  const location = useLocation();
-  const draft = location.state?.draft || null;
-
-  const openNewPost =() =>
-      navigate("/admin/new-post");
-
-  return (
-    <Routes>
-      <Route index element={
-          <Admin 
-            onNewPost={openNewPost} 
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={onPostDeleted}
-            onDrafts={() =>navigate("/admin/drafts")}
-          />
-        }
-      />
-
-      <Route
-        path="dashboard"
-        element={
-          <Admin 
-            onNewPost={openNewPost} 
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={onPostDeleted}
-            onDrafts={() => navigate("/admin/drafts")}
-          />
-        }
-      />
-
-      
-      <Route
-        path="posts"
-        element={
-          <Admin 
-            onNewPost={openNewPost} 
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={onPostDeleted}
-            onDrafts={() => navigate("/admin/drafts")}
-          />
-        }
-      />
-
-
-      <Route
-        path="drafts"
-        element={
-          <DraftsPage
-            onBack={() => navigate("/admin")}
-            onNewPost={openNewPost}
-            onEditDraft={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-          />
-        }
-      />
-
-      <Route
-        path="new-post"
-        element={
-          <PostPage
-            draft={draft}
-            onPostSaved={onPostSaved}
-            onBack={() => navigate("/admin")}
-          />
-        }
-      />
-
-      <Route
-        path="settings"
-        element={
-          <Admin
-            initialTab="settings"
-            onNewPost={openNewPost}
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={() => {}}
-            onDrafts={() => navigate("/admin/drafts")}
-          />
-        }
-      />
-
-      <Route
-        path="profile"
-        element={
-          <ProfilePage
-            onLogout={onLogout}
-          />
-        }
-      />
-    </Routes>
-  );
-}
 
 function ArticleRoute({
   darkMode,
