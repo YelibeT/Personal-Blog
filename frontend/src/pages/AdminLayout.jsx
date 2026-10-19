@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
+import DraftsPage from "./DraftsPage";
 
 function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
 
@@ -33,19 +34,6 @@ function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
         }
       />
 
-      
-      <Route
-        path="posts"
-        element={
-          <Admin 
-            onNewPost={openNewPost} 
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={onPostDeleted}
-            onDrafts={() => navigate("/admin/drafts")}
-          />
-        }
-      />
-
 
       <Route
         path="drafts"
@@ -53,31 +41,7 @@ function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
           <DraftsPage
             onBack={() => navigate("/admin")}
             onNewPost={openNewPost}
-            onEditDraft={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-          />
-        }
-      />
-
-      <Route
-        path="new-post"
-        element={
-          <PostPage
-            draft={draft}
-            onPostSaved={onPostSaved}
-            onBack={() => navigate("/admin")}
-          />
-        }
-      />
-
-      <Route
-        path="settings"
-        element={
-          <Admin
-            initialTab="settings"
-            onNewPost={openNewPost}
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={onPostDeleted}
-            onDrafts={() => navigate("/admin/drafts")}
+            onEditDraft={(post) => navigate("/admin/drafts", {state: {draft: post}})}
           />
         }
       />
@@ -113,19 +77,13 @@ function AdminLayout({ darkMode, onToggleTheme }) {
           <NavLink className={navClass} to="/admin/dashboard">
             Dashboard
           </NavLink>
-          <NavLink className={navClass} to="/admin/posts">
-            Posts
-          </NavLink>
           <NavLink className={navClass} to="/admin/drafts">
             Drafts
-          </NavLink>
-          <NavLink className={navClass} to="/admin/new-post">
-            New post
           </NavLink>
           <NavLink className={navClass} to="/admin/profile">
             Profile
           </NavLink>
-          <Link to="/">View site</Link>
+          {/**<Link to="/">View site</Link> make some admin side view for the posts/profile like instagram*/}
         </nav>
 
         <div className="admin-label">
