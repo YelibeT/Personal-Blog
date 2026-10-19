@@ -12,13 +12,13 @@ import {
 
 import "./App.css";
 
-import ArticlePage from "./ArticlePage";
-import Admin from "./Admin";
-import AdminLayout from "./AdminLayout";
-import AdminLogin from "./AdminLogin";
-import DraftsPage from "./DraftsPage";
-import PostPage from "./PostPage";
-import ProfilePage from "./ProfilePage";
+import ArticlePage from "./pages/ArticlePage";
+import Admin from "./pages/Admin";
+import AdminLayout from "./pages/AdminLayout";
+import AdminLogin from "./pages/AdminLogin";
+import DraftsPage from "./pages/DraftsPage";
+import PostPage from "./pages/PostPage";
+import ProfilePage from "./pages/ProfilePage";
 
 import {
   fetchPublishedPosts,
@@ -64,28 +64,15 @@ function SocialIcon({ name }) {
   }
 
   if (name === "instagram") {
+    
     return (
-      <svg
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <rect
-          x="3.5"
-          y="3.5"
-          width="17"
-          height="17"
-          rx="4"
-        />
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
         <circle cx="12" cy="12" r="4" />
-        <circle
-          className="social-icon-dot"
-          cx="17.5"
-          cy="6.5"
-          r="1"
-        />
+        <circle className="social-icon-dot" cx="17.5" cy="6.5" r="1" />
       </svg>
     );
+
   }
 
   return (
@@ -99,21 +86,9 @@ function SocialIcon({ name }) {
   );
 }
 
-function Home({
-  darkMode,
-  onToggleTheme,
-  posts,
-  postsLoading
-}) {
-  const [sidebarOpen, setSidebarOpen] =
-    useState(false);
-
-  const [query, setQuery] =
-    useState("");
-
-  const [subscribed, setSubscribed] =
-    useState(false);
-
+function Home({darkMode, onToggleTheme, posts,postsLoading}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -122,14 +97,8 @@ function Home({
       return;
     }
 
-    const section = document.getElementById(
-      location.hash.slice(1)
-    );
-
-    section?.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    const section = document.getElementById(location.hash.slice(1));
+    section?.scrollIntoView({ behavior: "smooth", block: "start"});
   }, [location.hash]);
 
   const visiblePosts = useMemo(() => {
@@ -144,78 +113,33 @@ function Home({
 
   return (
     <div
-      className={
-        darkMode
-          ? "site dark"
-          : "site"
-      }
+      className={darkMode ? "site dark" : "site"}
     >
-      <button
-        className="menu-toggle"
-        onClick={() =>
+      <button className="menu-toggle" onClick={() =>
           setSidebarOpen(!sidebarOpen)
-        }
-        aria-label={
-          sidebarOpen
-            ? "Close navigation"
-            : "Open navigation"
-        }
-        aria-expanded={sidebarOpen}
+        } aria-label={sidebarOpen ? "Close navigation" : "Open navigation"} aria-expanded={sidebarOpen}
       >
         {sidebarOpen ? "×" : "☰"}
       </button>
 
       <header className="topbar">
-        <Link
-          className="wordmark"
-          to="/"
-          aria-label="Biniyam Abebe home"
-        >
+        <Link className="wordmark" to="/" aria-label="Biniyam Abebe home">
           <span>BA</span> Biniyam Abebe
         </Link>
 
-        <nav
-          className={
-            sidebarOpen
-              ? "is-open"
-              : ""
-          }
-        >
-          <Link
-            to="/"
-            onClick={() =>
-              setSidebarOpen(false)
-            }
-          >
-            Home
+        <nav className={ sidebarOpen ? "is-open" : "" }>
+          <Link to="/" onClick={() => setSidebarOpen(false)}>
+              Home
           </Link>
-
-          <Link
-            to="/#about"
-            onClick={() =>
-              setSidebarOpen(false)
-            }
-          >
+          <Link to="/#about" onClick={() =>setSidebarOpen(false)}>
             About
           </Link>
-
-          <Link
-            to="/#writing"
-            onClick={() =>
-              setSidebarOpen(false)
-            }
-          >
+          <Link to="/#writing" onClick={() =>setSidebarOpen(false)}>
             Writing
           </Link>
         </nav>
 
-        <button
-          className="theme-toggle"
-          onClick={() =>
-            onToggleTheme()
-          }
-          aria-label="Toggle color theme"
-        >
+        <button className="theme-toggle" onClick={() => onToggleTheme()} aria-label="Toggle color theme">
           <span>
             {darkMode ? "☼" : "◐"}
           </span>
@@ -224,20 +148,16 @@ function Home({
 
       <main id="top">
         {/* ABOUT / HERO */}
-        <section
-          className="intro"
-          id="about"
-        >
+        <section className="intro" id="about">
           <div className="intro-layout">
             <div className="intro-content">
               <p className="eyebrow">
                 WRITER & MED-STUDENT
               </p>
 
-              <h1>
-                Biniyam
+              <h1>Biniyam
                 <br />
-                <em>Abebe</em>
+              <em>Abebe</em>
               </h1>
 
               <p className="intro-copy">
@@ -262,13 +182,9 @@ function Home({
                 share what I learn, encourage
                 others in their faith, and help
                 young Christians grow closer
-                to God and His Word.
-              </p>
+                to God and His Word.</p>
 
-              <Link
-                className="text-link"
-                to="/#writing"
-              >
+              <Link className="text-link" to="/#writing">
                 Explore the writing{" "}
                 <span>↘</span>
               </Link>
@@ -281,81 +197,28 @@ function Home({
         </section>
 
         {/* SELECTED WRITING */}
-        <section
-          className="writing-section"
-          id="writing"
-        >
+        <section className="writing-section" id="writing">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">
-                The latest
-              </p>
-
-              <h2>
-                Selected writing
-              </h2>
-            </div>
-
-            <div className="search-wrap">
-              <span>⌕</span>
-
-              <input
-                value={query}
-                onChange={(event) =>
-                  setQuery(
-                    event.target.value
-                  )
-                }
-                placeholder="Search notes"
-                aria-label="Search notes"
-              />
+              <p className="eyebrow">The latest</p>
+              <h2>Selected writing</h2>
             </div>
           </div>
-
           {postsLoading ? (
-            <p className="empty-state">
-              Loading writing...
-            </p>
+            <p className="empty-state">Loading writing...</p>
           ) : visiblePosts.length ? (
             <div className="posts-grid">
               {visiblePosts.map(
                 (post) => (
-                  <article
-                    className="post"
-                    key={post.id}
-                  >
-                    {post.coverImage && (
-                      <img
-                        src={
-                          post.coverImage
-                        }
-                        alt=""
-                      />
-                    )}
-
+                  <article className="post" key={post.id}>
+                    {post.coverImage && (<img src={post.coverImage} alt=""/>)}
                     <div className="post-info">
                       <div className="post-meta">
-                        <span>
-                          {post.category}
-                        </span>
-
-                        <span>
-                          {new Date(
-                            post.createdAt
-                          ).toLocaleDateString()}
-                        </span>
+                        <span>{post.category}</span>
+                        <span> {new Date(post.createdAt).toLocaleDateString()}</span>
                       </div>
-
-                      <h3>
-                        {post.title}
-                      </h3>
-
-                      <p>
-                        {getPostPreview(
-                          post
-                        )}
-                      </p>
-
+                      <h3>{post.title}</h3>
+                      <p>{getPostPreview(post)}</p>
                       <div className="post-footer">
                         <span>
                           {Math.max(
@@ -371,19 +234,8 @@ function Home({
                           min read
                         </span>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate(
-                              `/post/${post.id}`,
-                              {
-                                state: {
-                                  backgroundLocation:
-                                    location
-                                }
-                              }
-                            )
-                          }
+                        <button type="button" onClick={() => navigate(`/post/${post.id}`,
+                          {state: {backgroundLocation:location}})}
                           aria-label={`Read ${post.title}`}
                         >
                           Read article{" "}
@@ -396,22 +248,14 @@ function Home({
               )}
             </div>
           ) : (
-            <p className="empty-state">
-              No notes found.
-            </p>
+            <p className="empty-state">No notes found.</p>
           )}
         </section>
 
         {/* SOCIAL */}
-        <section
-          className="social-section"
-          id="social"
-        >
+        <section className="social-section" id="social">
           <div className="social-intro">
-            <p className="eyebrow">
-              Find me elsewhere
-            </p>
-
+            <p className="eyebrow">Find me elsewhere</p>
             <h2>
               Come say
               <br />
@@ -517,9 +361,7 @@ function ProtectedRoute({
     return (
       <div className="site">
         <main className="admin-main">
-          <p>
-            Restoring admin session...
-          </p>
+          <p>Restoring admin session...</p>
         </main>
       </div>
     );
@@ -548,9 +390,7 @@ function AdminLoginRoute({
     return (
       <div className="site">
         <main className="admin-main">
-          <p>
-            Restoring admin session...
-          </p>
+          <p>Restoring admin session...</p>
         </main>
       </div>
     );
@@ -558,86 +398,42 @@ function AdminLoginRoute({
 
   if (isAdmin) {
     return (
-      <Navigate
-        to="/admin/dashboard"
-        replace
-      />
+      <Navigate to="/admin/dashboard" replace/>
     );
   }
 
   return (
-    <AdminLogin
-      onLogin={() => {
-        onLogin();
-
-        navigate(
-          "/admin/dashboard",
+    <AdminLogin onLogin={() => {onLogin();
+      navigate("/admin/dashboard",
           {
             replace: true
           }
         );
       }}
-      onBack={() =>
-        navigate("/")
-      }
+      onBack={() =>navigate("/")}
       darkMode={darkMode}
-      onToggleTheme={
-        onToggleTheme
-      }
+      onToggleTheme={onToggleTheme}
     />
   );
 }
 
-function AdminContent({
-  onLogout,
-  onPostSaved,
-  onPostDeleted
-}) {
-  const navigate =
-    useNavigate();
+function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
 
-  const location =
-    useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const draft = location.state?.draft || null;
 
-  const draft =
-    location.state?.draft ||
-    null;
-
-  const openNewPost =
-    () =>
-      navigate(
-        "/admin/new-post"
-      );
+  const openNewPost =() =>
+      navigate("/admin/new-post");
 
   return (
     <Routes>
-      <Route
-        index
-        element={
-          <Admin
-            onNewPost={
-              openNewPost
-            }
-            onEditPost={(
-              post
-            ) =>
-              navigate(
-                "/admin/new-post",
-                {
-                  state: {
-                    draft: post
-                  }
-                }
-              )
-            }
-            onPostDeleted={
-              onPostDeleted
-            }
-            onDrafts={() =>
-              navigate(
-                "/admin/drafts"
-              )
-            }
+      <Route index element={
+          <Admin 
+            onNewPost={openNewPost} 
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+            onPostDeleted={onPostDeleted}
+            onDrafts={() =>navigate("/admin/drafts")}
           />
         }
       />
@@ -645,89 +441,36 @@ function AdminContent({
       <Route
         path="dashboard"
         element={
-          <Admin
-            onNewPost={
-              openNewPost
-            }
-            onEditPost={(
-              post
-            ) =>
-              navigate(
-                "/admin/new-post",
-                {
-                  state: {
-                    draft: post
-                  }
-                }
-              )
-            }
-            onPostDeleted={
-              onPostDeleted
-            }
-            onDrafts={() =>
-              navigate(
-                "/admin/drafts"
-              )
-            }
+          <Admin 
+            onNewPost={openNewPost} 
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+            onPostDeleted={onPostDeleted}
+            onDrafts={() => navigate("/admin/drafts")}
           />
         }
       />
 
+      
       <Route
         path="posts"
         element={
-          <Admin
-            onNewPost={
-              openNewPost
-            }
-            onEditPost={(
-              post
-            ) =>
-              navigate(
-                "/admin/new-post",
-                {
-                  state: {
-                    draft: post
-                  }
-                }
-              )
-            }
-            onPostDeleted={
-              onPostDeleted
-            }
-            onDrafts={() =>
-              navigate(
-                "/admin/drafts"
-              )
-            }
+          <Admin 
+            onNewPost={openNewPost} 
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+            onPostDeleted={onPostDeleted}
+            onDrafts={() => navigate("/admin/drafts")}
           />
         }
       />
+
 
       <Route
         path="drafts"
         element={
           <DraftsPage
-            onBack={() =>
-              navigate(
-                "/admin"
-              )
-            }
-            onNewPost={
-              openNewPost
-            }
-            onEditDraft={(
-              post
-            ) =>
-              navigate(
-                "/admin/new-post",
-                {
-                  state: {
-                    draft: post
-                  }
-                }
-              )
-            }
+            onBack={() => navigate("/admin")}
+            onNewPost={openNewPost}
+            onEditDraft={(post) => navigate("/admin/new-post", {state: {draft: post}})}
           />
         }
       />
@@ -737,14 +480,8 @@ function AdminContent({
         element={
           <PostPage
             draft={draft}
-            onPostSaved={
-              onPostSaved
-            }
-            onBack={() =>
-              navigate(
-                "/admin"
-              )
-            }
+            onPostSaved={onPostSaved}
+            onBack={() => navigate("/admin")}
           />
         }
       />
@@ -754,27 +491,10 @@ function AdminContent({
         element={
           <Admin
             initialTab="settings"
-            onNewPost={
-              openNewPost
-            }
-            onEditPost={(
-              post
-            ) =>
-              navigate(
-                "/admin/new-post",
-                {
-                  state: {
-                    draft: post
-                  }
-                }
-              )
-            }
+            onNewPost={openNewPost}
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
             onPostDeleted={() => {}}
-            onDrafts={() =>
-              navigate(
-                "/admin/drafts"
-              )
-            }
+            onDrafts={() => navigate("/admin/drafts")}
           />
         }
       />
@@ -783,9 +503,7 @@ function AdminContent({
         path="profile"
         element={
           <ProfilePage
-            onLogout={
-              onLogout
-            }
+            onLogout={onLogout}
           />
         }
       />
@@ -819,30 +537,14 @@ function ArticleRoute({
 }
 
 function App() {
-  const [isAdmin, setIsAdmin] =
-    useState(false);
-
-  const [authReady, setAuthReady] =
-    useState(false);
-
-  const [darkMode, setDarkMode] =
-    useState(false);
-
-  const [posts, setPosts] =
-    useState([]);
-
-  const [postsLoading, setPostsLoading] =
-    useState(true);
-
-  const navigate =
-    useNavigate();
-
-  const location =
-    useLocation();
-
-  const backgroundLocation =
-    location.state?.backgroundLocation;
-
+  const [isAdmin, setIsAdmin] =useState(false);
+  const [authReady, setAuthReady] =useState(false);
+  const [darkMode, setDarkMode] =useState(false);
+  const [posts, setPosts] =useState([]);
+  const [postsLoading, setPostsLoading] =useState(true);
+  const navigate =useNavigate();
+  const location = useLocation();
+  const backgroundLocation = location.state?.backgroundLocation;
   useEffect(() => {
     refreshAccessToken()
       .then(setIsAdmin)
@@ -868,193 +570,50 @@ function App() {
       );
   }, []);
 
-  const handlePostSaved =
-    (savedPost) => {
-      setPosts(
-        (currentPosts) => {
-          const remainingPosts =
-            currentPosts.filter(
-              (post) =>
-                post.id !==
-                savedPost.id
-            );
+    const handlePostSaved = (savedPost) => {
+      setPosts((currentPosts) => {
+        const remainingPosts = currentPosts.filter((post) => post.id !== savedPost.id);
 
-          return savedPost.published
-            ? [
-                savedPost,
-                ...remainingPosts
-              ]
-            : remainingPosts;
-        }
-      );
+        return savedPost.published ? [savedPost, ...remainingPosts] : remainingPosts;
+      });
     };
 
-  const handlePostDeleted =
-    (postId) => {
-      setPosts(
-        (currentPosts) =>
-          currentPosts.filter(
-            (post) =>
-              post.id !== postId
-          )
-      );
+    const handlePostDeleted = (postId) => {
+      setPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
     };
 
-  const handleLogout =
-    async () => {
+
+  const handleLogout = async () => {
       try {
         await logout();
-      } finally {
+      } 
+      finally {
         setIsAdmin(false);
         navigate("/");
       }
-    };
+  };
 
   return (
     <>
-      <Routes
-        location={
-          backgroundLocation ||
-          location
-        }
-      >
-        <Route
-          path="/"
-          element={
-            <Home
-              darkMode={darkMode}
-              onToggleTheme={() =>
-                setDarkMode(
-                  !darkMode
-                )
-              }
-              posts={posts}
-              postsLoading={
-                postsLoading
-              }
-            />
-          }
-        />
+      <Routes location={backgroundLocation || location}>
+        <Route path="/" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
+        <Route path="/about" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
+        <Route path="/post/:id" element={<ArticleRoute darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
+        <Route path="/admin" element={<AdminLoginRoute isAdmin={isAdmin} authReady={authReady} onLogin={() => setIsAdmin(true)} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
 
-        <Route
-          path="/about"
-          element={
-            <Home
-              darkMode={darkMode}
-              onToggleTheme={() =>
-                setDarkMode(
-                  !darkMode
-                )
-              }
-              posts={posts}
-              postsLoading={
-                postsLoading
-              }
-            />
-          }
-        />
-
-        <Route
-          path="/post/:id"
-          element={
-            <ArticleRoute
-              darkMode={darkMode}
-              onToggleTheme={() =>
-                setDarkMode(
-                  !darkMode
-                )
-              }
-            />
-          }
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <AdminLoginRoute
-              isAdmin={isAdmin}
-              authReady={
-                authReady
-              }
-              onLogin={() =>
-                setIsAdmin(true)
-              }
-              darkMode={
-                darkMode
-              }
-              onToggleTheme={() =>
-                setDarkMode(
-                  !darkMode
-                )
-              }
-            />
-          }
-        />
-
-        <Route
-          element={
-            <ProtectedRoute
-              isAdmin={isAdmin}
-              authReady={
-                authReady
-              }
-            />
-          }
-        >
-          <Route
-            element={
-              <AdminLayout
-                darkMode={
-                  darkMode
-                }
-                onToggleTheme={() =>
-                  setDarkMode(
-                    !darkMode
-                  )
-                }
-              />
-            }
-          >
-            <Route
-              path="/admin/*"
-              element={
-                <AdminContent
-                  onLogout={
-                    handleLogout
-                  }
-                  onPostSaved={
-                    handlePostSaved
-                  }
-                  onPostDeleted={
-                    handlePostDeleted
-                  }
-                />
-              }
-            />
+        <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
+          <Route element={<AdminLayout darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
+            <Route path="/admin/*" element={<AdminContent onLogout={handleLogout} onPostSaved={handlePostSaved} onPostDeleted={handlePostDeleted} />} />
           </Route>
         </Route>
       </Routes>
 
-      {backgroundLocation && (
-        <Routes>
-          <Route
-            path="/post/:id"
-            element={
-              <ArticlePage
-                darkMode={
-                  darkMode
-                }
-                onToggleTheme={() =>
-                  setDarkMode(
-                    !darkMode
-                  )
-                }
-              />
-            }
-          />
-        </Routes>
-      )}
-    </>
+    {backgroundLocation && (
+      <Routes>
+        <Route path="/post/:id" element={<ArticlePage darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
+      </Routes>
+    )}
+  </>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { fetchPublishedPost } from "./services/api";
+import { fetchPublishedPost } from "../services/api";
 
 function ArticlePage({ darkMode, onToggleTheme }) {
   const { id } = useParams();
