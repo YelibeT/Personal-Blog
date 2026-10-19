@@ -220,20 +220,6 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
                       <h3>{post.title}</h3>
                       <p>{getPostPreview(post)}</p>
                       <div className="post-footer">
-                        <span>
-                          {Math.max(
-                            1,
-                            Math.ceil(
-                              (post
-                                .content
-                                ?.length ||
-                                0) /
-                                1200
-                            )
-                          )}{" "}
-                          min read
-                        </span>
-
                         <button type="button" onClick={() => navigate(`/post/${post.id}`,
                           {state: {backgroundLocation:location}})}
                           aria-label={`Read ${post.title}`}
