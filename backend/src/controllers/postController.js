@@ -175,40 +175,6 @@ export const updatePost = async (req, res) => {
     }
 };
 
-// GET published posts
-export const getPublishedPosts = async (req, res) => {
-    try {
-        const posts = await prisma.post.findMany({
-            where: {
-                published: true
-            },
-            orderBy: {
-                createdAt: "desc"
-            },
-            include: {
-                author: {
-                    select: {
-                        username: true,
-                        profileImage: true
-                    }
-                }
-            }
-        });
-
-        res.status(200).json(posts);
-
-    } catch (error) {
-        console.error(
-            "Failed to fetch published posts:",
-            error
-        );
-
-        res.status(500).json({
-            error: "Failed to fetch posts"
-        });
-    }
-};
-
 // DELETE post - Admin only
 export const deletePost = async (req, res) => {
     try {
