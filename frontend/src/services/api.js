@@ -56,6 +56,15 @@ export const refreshAccessToken = async () => {
     return true;
 };
 
+export const logout = async () => {
+    await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+    });
+
+    accessToken = null;
+};
+
 export const apiFetch = async (endpoint, options = {}) => {
     const makeRequest = () => {
         const headers = {

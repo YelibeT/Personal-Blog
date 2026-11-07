@@ -1,9 +1,11 @@
 import DraftsPage from "../pages/DraftsPage";
 import PostPage from "../pages/PostPage";
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import Admin from "../pages/Admin";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import ProfilePage from "../pages/ProfilePage";
 
-function AdminContent({onPostSaved,onPostDeleted}) {
+
+function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,7 +16,8 @@ function AdminContent({onPostSaved,onPostDeleted}) {
 
   return (
     <Routes>
-      <Route index element={
+      <Route 
+        path="drafts" element={
           <Admin 
             onNewPost={openNewPost} 
             onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
@@ -35,52 +38,11 @@ function AdminContent({onPostSaved,onPostDeleted}) {
           />
         }
       />
-
-      
       <Route
-        path="posts"
+        path="profile"
         element={
-          <Admin 
-            onNewPost={openNewPost} 
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={onPostDeleted}
-            onDrafts={() => navigate("/admin/drafts")}
-          />
-        }
-      />
-
-
-      <Route
-        path="drafts"
-        element={
-          <DraftsPage
-            onBack={() => navigate("/admin")}
-            onNewPost={openNewPost}
-            onEditDraft={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-          />
-        }
-      />
-
-      <Route
-        path="new-post"
-        element={
-          <PostPage
-            draft={draft}
-            onPostSaved={onPostSaved}
-            onBack={() => navigate("/admin")}
-          />
-        }
-      />
-
-      <Route
-        path="settings"
-        element={
-          <Admin
-            initialTab="settings"
-            onNewPost={openNewPost}
-            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
-            onPostDeleted={() => {}}
-            onDrafts={() => navigate("/admin/drafts")}
+          <ProfilePage
+            onLogout={onLogout}
           />
         }
       />
