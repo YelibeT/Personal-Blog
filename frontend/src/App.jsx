@@ -5,7 +5,7 @@ import AdminLoginRoute from "./components/AdminLoginRoute";
 import AdminContent from "./components/AdminContent";
 import ArticlePage from "./pages/ArticlePage";
 import AdminLayout from "./pages/AdminLayout";
-import {fetchPublishedPosts, logout, refreshAccessToken} from "./services/api";
+import {fetchPublishedPosts, refreshAccessToken} from "./services/api";
 
 import "./App.css";
 
@@ -394,17 +394,6 @@ function App() {
       setPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
     };
 
-
-  const handleLogout = async () => {
-      try {
-        await logout();
-      } 
-      finally {
-        setIsAdmin(false);
-        navigate("/");
-      }
-  };
-
   return (
     <>
       <Routes location={backgroundLocation || location}>
@@ -415,7 +404,7 @@ function App() {
 
         <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
           <Route element={<AdminLayout darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
-            <Route path="/admin/*" element={<AdminContent onLogout={handleLogout} onPostSaved={handlePostSaved} onPostDeleted={handlePostDeleted} />} />
+            <Route path="/admin/*" element={<AdminContent onPostSaved={handlePostSaved} onPostDeleted={handlePostDeleted} />} />
           </Route>
         </Route>
       </Routes>

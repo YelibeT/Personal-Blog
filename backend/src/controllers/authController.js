@@ -29,65 +29,6 @@ export const getCurrentUser = async (req, res) => {
     }
 };
 
-export const updateProfile = async (req, res) => {
-    try {
-        const { displayName, bio, profileImage } = req.body;
-        const user = await prisma.user.update({
-            where: { id: req.user.userId },
-            data: {
-                displayName: typeof displayName === "string" ? displayName.trim() || null : null,
-                bio: typeof bio === "string" ? bio.trim() || null : null,
-                profileImage: typeof profileImage === "string" ? profileImage.trim() || null : null
-            }
-        });
-
-        res.status(200).json(publicUser(user));
-    } catch (error) {
-        console.error("Failed to update admin profile:", error);
-        if (error.code === "P2025") {
-            return res.status(404).json({ error: "Admin profile not found" });
-        }
-        res.status(500).json({ error: "Failed to update admin profile" });
-    }
-};
-
-export const changePassword = async (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ error: "Current and new passwords are required" });
-        }
-
-        if (newPassword.length < 8) {
-            return res.status(400).json({ error: "New password must be at least 8 characters" });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { id: req.user.userId }
-        });
-
-        if (!user || user.role !== "ADMIN") {
-            return res.status(404).json({ error: "Admin profile not found" });
-        }
-
-        const passwordMatch = await bcrypt.compare(currentPassword, user.passwordHash);
-        if (!passwordMatch) {
-            return res.status(400).json({ error: "Current password is incorrect" });
-        }
-
-        const passwordHash = await bcrypt.hash(newPassword, 12);
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { passwordHash, refreshToken: null }
-        });
-
-        res.status(200).json({ message: "Password changed successfully" });
-    } catch (error) {
-        console.error("Failed to change password:", error);
-        res.status(500).json({ error: "Failed to change password" });
-    }
-};
 
 export const login = async (req, res) => {
     try {
@@ -231,41 +172,6 @@ export const refreshAccessToken = async (req, res) => {
 
         res.status(401).json({
             error: "Admin session is invalid"
-        });
-    }
-};
-
-
-export const logout = async (req, res) => {
-    try {
-        const refreshToken = req.cookies.refreshToken;
-
-        if (refreshToken) {
-            await prisma.user.updateMany({
-                where: {
-                    refreshToken
-                },
-                data: {
-                    refreshToken: null
-                }
-            });
-        }
-
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: false,
-            sameSite: "lax"
-        });
-
-        res.status(200).json({
-            message: "Logged out successfully"
-        });
-
-    } catch (error) {
-        console.error(error);
-
-        res.status(500).json({
-            error: "Logout failed"
         });
     }
 };

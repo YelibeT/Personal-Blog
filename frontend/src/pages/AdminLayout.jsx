@@ -1,7 +1,6 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import DraftsPage from "./DraftsPage";
 
-function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
+function AdminContent({onPostSaved,onPostDeleted}) {
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,6 +33,19 @@ function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
         }
       />
 
+      
+      <Route
+        path="posts"
+        element={
+          <Admin 
+            onNewPost={openNewPost} 
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+            onPostDeleted={onPostDeleted}
+            onDrafts={() => navigate("/admin/drafts")}
+          />
+        }
+      />
+
 
       <Route
         path="drafts"
@@ -41,16 +53,31 @@ function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
           <DraftsPage
             onBack={() => navigate("/admin")}
             onNewPost={openNewPost}
-            onEditDraft={(post) => navigate("/admin/drafts", {state: {draft: post}})}
+            onEditDraft={(post) => navigate("/admin/new-post", {state: {draft: post}})}
           />
         }
       />
 
       <Route
-        path="profile"
+        path="new-post"
         element={
-          <ProfilePage
-            onLogout={onLogout}
+          <PostPage
+            draft={draft}
+            onPostSaved={onPostSaved}
+            onBack={() => navigate("/admin")}
+          />
+        }
+      />
+
+      <Route
+        path="settings"
+        element={
+          <Admin
+            initialTab="settings"
+            onNewPost={openNewPost}
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+            onPostDeleted={onPostDeleted}
+            onDrafts={() => navigate("/admin/drafts")}
           />
         }
       />
@@ -77,13 +104,16 @@ function AdminLayout({ darkMode, onToggleTheme }) {
           <NavLink className={navClass} to="/admin/dashboard">
             Dashboard
           </NavLink>
+          <NavLink className={navClass} to="/admin/posts">
+            Posts
+          </NavLink>
           <NavLink className={navClass} to="/admin/drafts">
             Drafts
           </NavLink>
-          <NavLink className={navClass} to="/admin/profile">
-            Profile
+          <NavLink className={navClass} to="/admin/new-post">
+            New post
           </NavLink>
-          {/**<Link to="/">View site</Link> make some admin side view for the posts/profile like instagram*/}
+          <Link to="/">View site</Link>
         </nav>
 
         <div className="admin-label">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../services/api";
 
-function ProfilePage({ onLogout }) {
+function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
@@ -168,22 +168,10 @@ function ProfilePage({ onLogout }) {
       setMessage(
         "Password changed. Please sign in again."
       );
-
-      await onLogout();
     } catch (requestError) {
       setError(requestError.message);
     } finally {
       setChangingPassword(false);
-    }
-  };
-
-  const verifyLogout = () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to log out?"
-    );
-
-    if (confirmed) {
-      onLogout();
     }
   };
 
@@ -376,18 +364,6 @@ function ProfilePage({ onLogout }) {
           </div>
         </section>
       </form>
-
-      <section className="profile-account-actions">
-        <h2>Account access</h2>
-
-        <button
-          className="quiet-action delete-action"
-          type="button"
-          onClick={verifyLogout}
-        >
-          Log out
-        </button>
-      </section>
     </main>
   );
 }

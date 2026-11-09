@@ -1,5 +1,5 @@
 import AdminLogin from "../pages/AdminLogin";
-import { useNavigate } from "react-router-dom";
+import { Navigate,useNavigate } from "react-router-dom";
 
 function AdminLoginRoute({
   isAdmin,

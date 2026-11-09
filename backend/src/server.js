@@ -6,9 +6,6 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
 import adminPostRoutes from "./routes/adminPostRoutes.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
-import profileRoutes from "./routes/profileRoutes.js";
-import attachmentRoutes from "./routes/attachmentRoutes.js";
 
 const app = express();
 
@@ -17,9 +14,7 @@ const corsOptions = {
     const allowedOrigins = new Set([
       "http://localhost:5173",
       "https://personal-blog-jade-nine.vercel.app",
-      "https://personal-blog-yelibets-projects.vercel.app",
       "https://biniyam-personalblog.vercel.app",
-      process.env.FRONTEND_URL
     ].filter(Boolean));
 
     if (!origin || allowedOrigins.has(origin)) {
@@ -39,9 +34,6 @@ app.options(/.*/, cors(corsOptions));
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/admin/posts", adminPostRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/admin/profile", profileRoutes);
-app.use("/api/attachments", attachmentRoutes);
 
 
 app.get(["/admin", "/admin/"], (req, res) => {

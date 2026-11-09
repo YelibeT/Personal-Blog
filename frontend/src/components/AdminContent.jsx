@@ -1,11 +1,9 @@
 import DraftsPage from "../pages/DraftsPage";
 import PostPage from "../pages/PostPage";
-import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import Admin from "../pages/Admin";
-import ProfilePage from "../pages/ProfilePage";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-
-function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
+function AdminContent({onPostSaved,onPostDeleted}) {
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,8 +14,7 @@ function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
 
   return (
     <Routes>
-      <Route 
-        path="drafts" element={
+      <Route index element={
           <Admin 
             onNewPost={openNewPost} 
             onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
@@ -38,11 +35,52 @@ function AdminContent({onLogout,onPostSaved,onPostDeleted}) {
           />
         }
       />
+
+      
       <Route
-        path="profile"
+        path="posts"
         element={
-          <ProfilePage
-            onLogout={onLogout}
+          <Admin 
+            onNewPost={openNewPost} 
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+            onPostDeleted={onPostDeleted}
+            onDrafts={() => navigate("/admin/drafts")}
+          />
+        }
+      />
+
+
+      <Route
+        path="drafts"
+        element={
+          <DraftsPage
+            onBack={() => navigate("/admin")}
+            onNewPost={openNewPost}
+            onEditDraft={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+          />
+        }
+      />
+
+      <Route
+        path="new-post"
+        element={
+          <PostPage
+            draft={draft}
+            onPostSaved={onPostSaved}
+            onBack={() => navigate("/admin")}
+          />
+        }
+      />
+
+      <Route
+        path="settings"
+        element={
+          <Admin
+            initialTab="settings"
+            onNewPost={openNewPost}
+            onEditPost={(post) => navigate("/admin/new-post", {state: {draft: post}})}
+            onPostDeleted={() => {}}
+            onDrafts={() => navigate("/admin/drafts")}
           />
         }
       />
