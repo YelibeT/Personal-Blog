@@ -62,28 +62,30 @@ function ProfilePage() {
       const formData = new FormData();
 
       formData.append("image", profileImageFile);
+      formData.append("purpose", "user_profile");
 
       const response = await apiFetch(
-        "/admin/profile/image",
+        "/upload",
         {
-          method: "PUT",
+          method: "POST",
           body: formData
         }
       );
-
-      const data = await response.json();
-
       if (!response.ok) {
         throw new Error(
           data.error ||
           "Failed to upload profile image"
         );
       }
+      const data = await response.json();
 
-      setProfileImage(data.profileImage);
+      setProfileImage(data.url);
       setProfileImageFile(null);
 
       return data.profileImage;
+    }catch(error){
+      console.error("Profile image upload failed:", error);
+      throw error;
     } finally {
       setUploadingImage(false);
     }
@@ -101,9 +103,9 @@ function ProfilePage() {
         await uploadProfileImage();
 
       const response = await apiFetch(
-        "/auth/profile",
+        "/upload",
         {
-          method: "PUT",
+          method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
@@ -125,53 +127,10 @@ function ProfilePage() {
 
       setProfile(data);
       setMessage("Profile changes saved.");
-    } catch (requestError) {
-      setError(requestError.message);
+    } catch (error) {
+      setError(error.message);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const changePassword = async (event) => {
-    event.preventDefault();
-
-    setChangingPassword(true);
-    setMessage("");
-    setError("");
-
-    try {
-      const response = await apiFetch(
-        "/auth/password",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            currentPassword,
-            newPassword
-          })
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to change password"
-        );
-      }
-
-      setCurrentPassword("");
-      setNewPassword("");
-
-      setMessage(
-        "Password changed. Please sign in again."
-      );
-    } catch (requestError) {
-      setError(requestError.message);
-    } finally {
-      setChangingPassword(false);
     }
   };
 

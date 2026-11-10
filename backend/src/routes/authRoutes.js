@@ -13,8 +13,6 @@ const router = express.Router();
 router.post("/login", login);
 
 router.post("/refresh", refreshAccessToken);
-
-
 router.use(authenticate);
 router.use(authorizeAdmin);
 

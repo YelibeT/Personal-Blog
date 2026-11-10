@@ -98,7 +98,6 @@ function PostPage({
       ".doc",
       ".docx",
       ".txt",
-      ".zip"
     ];
 
     const maxSize =
@@ -224,30 +223,24 @@ function PostPage({
       );
     }
 
-    const formData =
-      new FormData();
+    const formData = new FormData();
 
-    formData.append(
-      "image",
-      coverImage
-    );
+    formData.append("image", coverImage);
+    formData.append("purpose", "user_profile");
+    
 
-    const response =
-      await apiFetch(
-        "/upload",
+    const response = await apiFetch( "/upload",
         {
           method: "POST",
           body: formData
         }
       );
 
-    const data =
-      await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
       throw new Error(
-        data.error ||
-          "Failed to upload cover image"
+        data.error || "Failed to upload cover image"
       );
     }
 
@@ -287,28 +280,28 @@ function PostPage({
           "file",
           file
         );
-
+        
+        
+        formData.append("purpose","blog_document"); 
+        
+        
         formData.append(
           "postId",
           String(postId)
         );
 
-        const response =
-          await apiFetch(
-            "/attachments",
+        const response = await apiFetch("/upload",
             {
               method: "POST",
               body: formData
             }
           );
 
-        const data =
-          await response.json();
+        const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
-            data.error ||
-              `Failed to upload ${file.name}`
+            data.error || `Failed to upload ${file.name}`
           );
         }
 
@@ -343,9 +336,6 @@ function PostPage({
           : "Saving..."
       );
 
-      /*
-       * Upload cover image first.
-       */
       const imageUrl =
         await uploadCoverImage();
 
@@ -379,10 +369,6 @@ function PostPage({
             }
           );
       }
-
-      /*
-       * Create new post.
-       */
       else {
         response =
           await apiFetch(
@@ -400,25 +386,13 @@ function PostPage({
           );
       }
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "Failed to save post"
-        );
+        throw new Error(data.error || "Failed to save post");
       }
 
-      /*
-       * Now the post definitely exists.
-       *
-       * Attachments can safely be linked to it.
-       */
-      await uploadAttachments(
-        data.id
-      );
-
+      await uploadAttachments(data.id);
       onPostSaved(data);
 
       setSaveStatus(
@@ -445,10 +419,7 @@ function PostPage({
     }
   };
 
-  /*
-   * Decide whether the user wants
-   * to save a draft or publish.
-   */
+
   const handleSubmit = async (
     event
   ) => {
