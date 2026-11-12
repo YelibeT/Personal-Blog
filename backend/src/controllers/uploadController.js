@@ -5,6 +5,10 @@ const startTime = performance.now();
 
 const uploadController = async (req, res) => {
     try {
+        const file =
+            req.files?.file?.[0] ||
+            req.files?.coverImage?.[0] ||
+            req.files?.image?.[0];
         const folders = {
             blog_profile: "blog/profiles",
             user_profile: "users/profiles",
@@ -12,14 +16,12 @@ const uploadController = async (req, res) => {
         };
 
         const folder = folders[req.body.purpose];
-        console.log(req.body)
-        console.log(req.body.purpose)
         if (!folder) {
             return res.status(400).json({
                 message: "Invalid upload purpose"
             });
         }
-        if (!req.file) {
+        if (!file) {
             return res.status(400).json({
                 message: "No file uploaded"
             });
@@ -51,17 +53,17 @@ const uploadController = async (req, res) => {
                 }
             );
 
-            stream.end(req.file.buffer)
+            stream.end(file.buffer)
         });
 
         const attachment = req.body.purpose === "blog_document"
             ? await prisma.attachment.create({
                 data: {
-                    fileName: req.file.originalname,
+                    fileName: file.originalname,
                     fileUrl: result.secure_url,
                     publicId: result.public_id,
-                    fileType: req.file.mimetype,
-                    fileSize: req.file.size,
+                    fileType: file.mimetype,
+                    fileSize: file.size,
                     postId
                 }
             })

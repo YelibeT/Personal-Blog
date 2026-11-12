@@ -12,6 +12,7 @@ import AdminContent from "./components/AdminContent";
 import ArticlePage from "./pages/ArticlePage";
 import AdminLayout from "./pages/AdminLayout";
 import {
+  fetchPublicProfile,
   fetchPublishedPosts,
   refreshAccessToken
 } from "./services/api";
@@ -94,7 +95,7 @@ function SocialIcon({ name }) {
   );
 }
 
-function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
+function Home({ darkMode, onToggleTheme, posts, postsLoading, profile }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -163,14 +164,24 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
         {/* ABOUT / HERO */}
         <section className="intro" id="about">
           <div className="intro-layout">
-            <div className="intro-content">
-              <p className="eyebrow">WRITER & MED-STUDENT</p>
-
+            <div className="intro-visual">
               <h1>
                 Biniyam
                 <br />
                 <em>Abebe</em>
               </h1>
+              {profile?.profileImage && (
+                <div className="profile-card">
+                  <img
+                    src={profile.profileImage}
+                    alt={`${profile.displayName || "Author"} profile`}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="intro-content">
+              <p className="eyebrow">WRITER & MED-STUDENT</p>
 
               <p className="intro-copy">
                 I am a medical student and
@@ -243,7 +254,6 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
                         className="post-attachments"
                         aria-label={`Attachments for ${post.title}`}
                       >
-                        <h4>Attached files</h4>
 
                         <ul className="post-attachment-list">
                           {post.attachments.map((attachment) => (
@@ -267,16 +277,6 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
                                     : ""}
                                 </small>
                               </div>
-
-                              <a
-                                className="post-attachment-link"
-                                href={attachment.fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label={`Open ${attachment.fileName}`}
-                              >
-                                Open ↗
-                              </a>
                             </li>
                           ))}
                         </ul>
@@ -284,18 +284,34 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
                     )}
 
                     <div className="post-footer">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate(`/post/${post.id}`, {
-                            state: { backgroundLocation: location }
-                          })
-                        }
-                        aria-label={`Read ${post.title}`}
-                      >
-                        Read article{" "}
-                        <b>↗</b>
-                      </button>
+  {post.attachments?.length > 0 ? (
+    post.attachments.map((attachment) => (
+      <a
+        key={attachment.id}
+        className="post-attachment-link"
+        href={attachment.fileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open ${attachment.fileName}`}
+      >
+        Open <b>↗</b>
+      </a>
+    ))
+  ) : (
+    <button
+      type="button"
+      onClick={() =>
+        navigate(`/post/${post.id}`, {
+          state: { backgroundLocation: location }
+        })
+      }
+      aria-label={`Read ${post.title}`}
+    >
+      Read article <b>↗</b>
+    </button>
+  )}
+
+                      
                     </div>
                   </div>
                 </article>
@@ -382,7 +398,7 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
   );
 }
 
-function ArticleRoute({ darkMode, onToggleTheme }) {
+function ArticleRoute({ darkMode, onToggleTheme, profile }) {
   return (
     <>
       <Home
@@ -390,6 +406,7 @@ function ArticleRoute({ darkMode, onToggleTheme }) {
         onToggleTheme={onToggleTheme}
         posts={[]}
         postsLoading={false}
+        profile={profile}
       />
 
       <ArticlePage
@@ -406,6 +423,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const backgroundLocation = location.state?.backgroundLocation;
@@ -424,6 +442,14 @@ function App() {
         console.error("Failed to load posts:", error)
       )
       .finally(() => setPostsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetchPublicProfile()
+      .then(setProfile)
+      .catch((error) =>
+        console.error("Failed to load public profile:", error)
+      );
   }, []);
 
   const handlePostSaved = async (savedPost) => {
@@ -466,6 +492,7 @@ function App() {
               onToggleTheme={() => setDarkMode(!darkMode)}
               posts={posts}
               postsLoading={postsLoading}
+              profile={profile}
             />
           }
         />
@@ -477,6 +504,7 @@ function App() {
               onToggleTheme={() => setDarkMode(!darkMode)}
               posts={posts}
               postsLoading={postsLoading}
+              profile={profile}
             />
           }
         />
@@ -486,6 +514,7 @@ function App() {
             <ArticleRoute
               darkMode={darkMode}
               onToggleTheme={() => setDarkMode(!darkMode)}
+              profile={profile}
             />
           }
         />

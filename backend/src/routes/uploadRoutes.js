@@ -7,7 +7,16 @@ import { authorizeAdmin } from '../middleware/authorizeAdmin.js';
 const upload = multer({})
 const router = express.Router()
 
-router.post("/", authenticate, authorizeAdmin, upload.single("file"), uploadController);
-router.post("/", authenticate, authorizeAdmin, upload.single("coverImage"), uploadController);
+router.post(
+  "/",
+  authenticate,
+  authorizeAdmin,
+  upload.fields([
+    { name: "file", maxCount: 1 },
+    { name: "coverImage", maxCount: 1 },
+    { name: "image", maxCount: 1 }
+  ]),
+  uploadController
+);
 
 export default router

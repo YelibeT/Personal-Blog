@@ -98,3 +98,14 @@ export const fetchPublishedPosts = async () => {
 
     return data;
 };
+
+export const fetchPublicProfile = async () => {
+    const response = await fetch(`${API_URL}/profile/public`);
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || "Failed to load profile");
+    }
+
+    return data;
+};

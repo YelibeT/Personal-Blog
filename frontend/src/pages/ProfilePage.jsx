@@ -1,329 +1,276 @@
+
 import { useEffect, useState } from "react";
 import { apiFetch } from "../services/api";
+import "../App.css"
 
 function ProfilePage() {
   const [profile, setProfile] = useState(null);
+
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [profileImageFile, setProfileImageFile] = useState(null);
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Load the current admin profile
   useEffect(() => {
-    const loadProfile = async () => {
+    const fetchProfile = async () => {
       try {
-        const response = await apiFetch("/auth/me");
+        const response = await apiFetch("/profile");
+
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(
-            data.error || "Failed to load profile"
-          );
+          throw new Error(data.error || "Failed to load profile.");
         }
 
         setProfile(data);
         setDisplayName(data.displayName || "");
         setBio(data.bio || "");
         setProfileImage(data.profileImage || "");
-      } catch (requestError) {
-        setError(requestError.message);
+      } catch (err) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProfile();
+    fetchProfile();
   }, []);
 
+  // Select a new profile image
   const handleProfileImageChange = (event) => {
-    setProfileImageFile(
-      event.target.files[0] || null
-    );
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image size cannot exceed 5 MB.");
+      return;
+    }
+
+    setError("");
+    setMessage("");
+    setProfileImageFile(file);
   };
 
+  // Upload the selected image to Cloudinary
   const uploadProfileImage = async () => {
-    if (!profileImageFile) {
-      return profileImage;
-    }
+    if (!profileImageFile) return profileImage;
 
     setUploadingImage(true);
 
     try {
       const formData = new FormData();
-
       formData.append("image", profileImageFile);
       formData.append("purpose", "user_profile");
 
-      const response = await apiFetch(
-        "/upload",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-          "Failed to upload profile image"
-        );
-      }
+      const response = await apiFetch("/upload", {
+        method: "POST",
+        body: formData,
+      });
+
       const data = await response.json();
 
-      setProfileImage(data.url);
+      if (!response.ok) {
+        throw new Error(
+          data.error || data.message || "Failed to upload profile image."
+        );
+      }
+
+      // Accept either response field until the upload controller
+      // response shape is confirmed.
+      const uploadedImageUrl = data.url || data.profileImage;
+
+      if (!uploadedImageUrl) {
+        throw new Error("The upload response did not contain an image URL.");
+      }
+
+      setProfileImage(uploadedImageUrl);
       setProfileImageFile(null);
 
-      return data.profileImage;
-    }catch(error){
-      console.error("Profile image upload failed:", error);
-      throw error;
+      return uploadedImageUrl;
     } finally {
       setUploadingImage(false);
     }
   };
 
-  const saveProfile = async (event) => {
+  // Save public profile details
+  const handleSaveProfile = async (event) => {
     event.preventDefault();
 
     setSaving(true);
-    setMessage("");
     setError("");
+    setMessage("");
 
     try {
-      const uploadedProfileImage =
-        await uploadProfileImage();
+      const uploadedImageUrl = await uploadProfileImage();
 
-      const response = await apiFetch(
-        "/upload",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            displayName,
-            bio,
-            profileImage: uploadedProfileImage
-          })
-        }
-      );
+      const response = await apiFetch("/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          displayName,
+          bio,
+          profileImage: uploadedImageUrl,
+        }),
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to save profile"
-        );
+        throw new Error(data.error || "Failed to update profile.");
       }
 
       setProfile(data);
-      setMessage("Profile changes saved.");
-    } catch (error) {
-      setError(error.message);
+      setDisplayName(data.displayName || "");
+      setBio(data.bio || "");
+      setProfileImage(data.profileImage || "");
+
+      setMessage("Profile updated successfully.");
+    } catch (err) {
+      setError(err.message);
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
+    return <p>Loading profile...</p>;
+  }
+
+  if (!profile) {
     return (
-      <main className="admin-main">
-        <div className="empty-admin">
-          <strong>Loading profile...</strong>
-        </div>
-      </main>
+      <div className="profile-page">
+        <p className="error-message">
+          {error || "Could not load your profile."}
+        </p>
+      </div>
     );
   }
 
+  const imagePreview = profileImageFile
+    ? URL.createObjectURL(profileImageFile)
+    : profileImage;
+
   return (
-    <main className="admin-main profile-page">
-      <div className="admin-heading">
-        <div>
-          <p className="eyebrow">Your account</p>
-
-          <h1>Profile</h1>
-
-          <p className="admin-subtitle">
-            Manage how you appear on the blog.
-          </p>
-        </div>
+    <div className="profile-page">
+      <div className="profile-header">
+        <h1>Profile</h1>
+        <p>Manage your public profile information.</p>
       </div>
 
-      {(error || message) && (
-        <div
-          className={
-            error
-              ? "empty-admin profile-feedback error"
-              : "empty-admin profile-feedback"
-          }
-        >
-          <strong>{error || message}</strong>
-        </div>
-      )}
+      {message && <p className="success-message">{message}</p>}
+      {error && <p className="error-message">{error}</p>}
 
-      <form
-        className="profile-form"
-        onSubmit={saveProfile}
-      >
-        <section className="form-section profile-identity">
+      <form className="profile-form" onSubmit={handleSaveProfile}>
+        <section className="profile-section">
           <h2>Public profile</h2>
+          <p>This information can be displayed to visitors of your blog.</p>
 
-          <div className="profile-picture-wrap">
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Current profile"
-                className="profile-picture"
+          <div className="profile-image-section">
+            <div className="profile-image-preview">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Profile preview"
+                />
+              ) : (
+                <span>
+                  {displayName?.charAt(0)?.toUpperCase() || "A"}
+                </span>
+              )}
+            </div>
+
+            <div className="profile-image-controls">
+              <label htmlFor="profile-image">
+                Profile picture
+              </label>
+
+              <input
+                id="profile-image"
+                type="file"
+                accept="image/*"
+                onChange={handleProfileImageChange}
               />
-            ) : (
-              <span className="profile-picture profile-picture-placeholder">
-                {(
-                  displayName ||
-                  profile?.username ||
-                  "A"
-                )
-                  .charAt(0)
-                  .toUpperCase()}
-              </span>
-            )}
+
+              <small>Maximum file size: 5 MB.</small>
+            </div>
           </div>
 
-          <label className="form-group">
-            <span>Profile picture</span>
-
+          <div className="form-group">
+            <label htmlFor="display-name">Display name</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleProfileImageChange}
-            />
-
-            <small>
-              JPG, PNG, or WebP up to 5 MB.
-            </small>
-
-            {profileImageFile && (
-              <small>
-                Selected: {profileImageFile.name}
-              </small>
-            )}
-          </label>
-
-          <label className="form-group">
-            <span>Display name</span>
-
-            <input
+              id="display-name"
+              type="text"
               value={displayName}
-              onChange={(event) =>
-                setDisplayName(event.target.value)
-              }
-              placeholder="Your name"
+              onChange={(event) => setDisplayName(event.target.value)}
+              maxLength={100}
+              placeholder="Enter your display name"
             />
-          </label>
+          </div>
 
-          <label className="form-group">
-            <span>Bio</span>
-
+          <div className="form-group">
+            <label htmlFor="bio">Bio</label>
             <textarea
+              id="bio"
               value={bio}
-              onChange={(event) =>
-                setBio(event.target.value)
-              }
-              placeholder="Tell readers about yourself"
-              rows="5"
+              onChange={(event) => setBio(event.target.value)}
+              maxLength={500}
+              rows={5}
+              placeholder="Write something about yourself..."
             />
-          </label>
-        </section>
-
-        <section className="form-section">
-          <h2>Account</h2>
-
-          <dl className="profile-account-details">
-            <div>
-              <dt>Email</dt>
-              <dd>{profile?.email}</dd>
-            </div>
-
-            <div>
-              <dt>Username</dt>
-              <dd>{profile?.username}</dd>
-            </div>
-          </dl>
-        </section>
-
-        <div className="form-actions">
-          <button
-            className="primary-action"
-            type="submit"
-            disabled={saving || uploadingImage}
-          >
-            {uploadingImage
-              ? "Uploading image..."
-              : saving
-                ? "Saving..."
-                : "Save changes"}
-          </button>
-        </div>
-      </form>
-
-      <form
-        className="profile-form profile-security"
-        onSubmit={changePassword}
-      >
-        <section className="form-section">
-          <h2>Security</h2>
-
-          <label className="form-group">
-            <span>Current password</span>
-
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(event) =>
-                setCurrentPassword(event.target.value)
-              }
-              required
-              autoComplete="current-password"
-            />
-          </label>
-
-          <label className="form-group">
-            <span>New password</span>
-
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(event) =>
-                setNewPassword(event.target.value)
-              }
-              minLength="8"
-              required
-              autoComplete="new-password"
-            />
-          </label>
-
-          <div className="form-actions">
-            <button
-              className="secondary-action"
-              type="submit"
-              disabled={changingPassword}
-            >
-              {changingPassword
-                ? "Changing..."
-                : "Change password"}
-            </button>
+            <small>{bio.length}/500 characters</small>
           </div>
         </section>
+
+        <section className="profile-section">
+          <h2>Account information</h2>
+
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={profile.email || ""}
+              disabled
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Username</label>
+            <input
+              type="text"
+              value={profile.username || ""}
+              disabled
+            />
+          </div>
+        </section>
+
+        <button
+          type="submit"
+          disabled={saving || uploadingImage}
+        >
+          {uploadingImage
+            ? "Uploading image..."
+            : saving
+              ? "Saving..."
+              : "Save changes"}
+        </button>
       </form>
-    </main>
+    </div>
   );
 }
 

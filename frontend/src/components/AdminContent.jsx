@@ -1,6 +1,7 @@
 import DraftsPage from "../pages/DraftsPage";
 import PostPage from "../pages/PostPage";
 import Admin from "../pages/Admin";
+import ProfilePage from "../pages/ProfilePage";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 function AdminContent({onPostSaved,onPostDeleted}) {
@@ -70,6 +71,11 @@ function AdminContent({onPostSaved,onPostDeleted}) {
             onBack={() => navigate("/admin")}
           />
         }
+      />
+
+      <Route
+        path="profile"
+        element={<ProfilePage />}
       />
 
       <Route
