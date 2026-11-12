@@ -1,6 +1,29 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../services/api";
 
+const readApiResponse = async (response, fallbackMessage) => {
+  const responseText = await response.text();
+  let data = {};
+
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(
+        responseText.includes("<!DOCTYPE") || responseText.includes("<html")
+          ? `The server returned an HTML response instead of JSON (HTTP ${response.status}). Check the request URL and backend route.`
+          : responseText
+      );
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || fallbackMessage);
+  }
+
+  return data;
+};
+
 function PostPage({
   draft,
   onPostSaved,
@@ -24,10 +47,8 @@ function PostPage({
 
   const [coverImage, setCoverImage] = useState(null);
 
-  // Newly selected files
   const [attachments, setAttachments] = useState([]);
 
-  // Files already uploaded for this post
   const [existingAttachments, setExistingAttachments] =
     useState([]);
 
@@ -52,14 +73,10 @@ function PostPage({
           `/attachments/post/${draft.id}`
         );
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-              "Failed to load attachments"
-          );
-        }
+        const data = await readApiResponse(
+          response,
+          "Failed to load attachments"
+        );
 
         setExistingAttachments(data);
       } catch (error) {
@@ -98,6 +115,7 @@ function PostPage({
       ".doc",
       ".docx",
       ".txt",
+      ".zip",
     ];
 
     const maxSize =
@@ -179,15 +197,10 @@ function PostPage({
         }
       );
 
-      const data =
-        await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error ||
-            "Failed to remove attachment"
-        );
-      }
+      await readApiResponse(
+        response,
+        "Failed to remove attachment"
+      );
 
       setExistingAttachments(
         (currentAttachments) =>
@@ -217,34 +230,32 @@ function PostPage({
    */
   const uploadCoverImage = async () => {
     if (!coverImage) {
-      return (
-        draft?.coverImage ||
-        null
-      );
+      return draft?.coverImage || null;
     }
 
     const formData = new FormData();
 
-    formData.append("image", coverImage);
-    formData.append("purpose", "user_profile");
+    formData.append("file", coverImage);
+    formData.append("purpose", "blog_profile");
     
 
-    const response = await apiFetch( "/upload",
-        {
-          method: "POST",
-          body: formData
-        }
-      );
+    const response = await apiFetch("/upload", {
+      method: "POST",
+      body: formData
+    });
 
-    const data = await response.json();
+    const data = await readApiResponse(
+      response,
+      "Failed to upload cover image"
+    );
 
-    if (!response.ok) {
-      throw new Error(
-        data.error || "Failed to upload cover image"
-      );
+    const imageUrl = data.imageUrl || data.url || data.secure_url || data.fileUrl;
+
+    if (!imageUrl) {
+      throw new Error("Upload succeeded, but the response did not include an image URL.");
     }
 
-    return data.imageUrl;
+    return imageUrl;
   };
 
   /*
@@ -252,18 +263,11 @@ function PostPage({
    *
    * The post must already exist before this runs.
    */
-  const uploadAttachments = async (
-    postId
-  ) => {
-    if (
-      attachments.length === 0
-    ) {
+  const uploadAttachments = async (postId) => {
+    if (attachments.length === 0) {
       return;
     }
-
-    setUploadingAttachments(
-      true
-    );
+    setUploadingAttachments( true );
 
     try {
       for (
@@ -273,37 +277,29 @@ function PostPage({
           `Uploading ${file.name}...`
         );
 
-        const formData =
-          new FormData();
+        const formData = new FormData();
 
         formData.append(
           "file",
           file
         );
         
-        
         formData.append("purpose","blog_document"); 
-        
         
         formData.append(
           "postId",
           String(postId)
         );
 
-        const response = await apiFetch("/upload",
-            {
-              method: "POST",
-              body: formData
-            }
-          );
+        const response = await apiFetch("/upload", {
+          method: "POST",
+          body: formData
+        });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.error || `Failed to upload ${file.name}`
-          );
-        }
+        const data = await readApiResponse(
+          response,
+          `Failed to upload ${file.name}`
+        );
 
         setExistingAttachments(
           (currentAttachments) => [
@@ -321,9 +317,7 @@ function PostPage({
     }
   };
 
-  /*
-   * Create or update the post.
-   */
+  
   const savePost = async (
     published
   ) => {
@@ -334,7 +328,7 @@ function PostPage({
         published
           ? "Publishing..."
           : "Saving..."
-      );
+      )
 
       const imageUrl =
         await uploadCoverImage();
@@ -386,11 +380,10 @@ function PostPage({
           );
       }
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to save post");
-      }
+      const data = await readApiResponse(
+        response,
+        "Failed to save post"
+      );
 
       await uploadAttachments(data.id);
       onPostSaved(data);

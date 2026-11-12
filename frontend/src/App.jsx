@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
-import {Link, Route, Routes, useLocation, useNavigate} from "react-router-dom";
+import {
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate
+} from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLoginRoute from "./components/AdminLoginRoute";
 import AdminContent from "./components/AdminContent";
 import ArticlePage from "./pages/ArticlePage";
 import AdminLayout from "./pages/AdminLayout";
-import {fetchPublishedPosts, refreshAccessToken} from "./services/api";
+import {
+  fetchPublishedPosts,
+  refreshAccessToken
+} from "./services/api";
 
 import "./App.css";
+import "./attachments.css";
 
 const stripPostFormatting = (value = "") =>
   value
@@ -25,12 +35,25 @@ const getPostPreview = (post) => {
     post.content ||
     "";
 
-  const preview =
-    stripPostFormatting(source);
+  const preview = stripPostFormatting(source);
 
   return preview.length > 120
     ? `${preview.slice(0, 117).trimEnd()}...`
     : preview;
+};
+
+const formatFileSize = (bytes = 0) => {
+  if (!bytes) return "";
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
 function SocialIcon({ name }) {
@@ -47,15 +70,17 @@ function SocialIcon({ name }) {
   }
 
   if (name === "instagram") {
-    
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+      >
         <rect x="3.5" y="3.5" width="17" height="17" rx="4" />
         <circle cx="12" cy="12" r="4" />
         <circle className="social-icon-dot" cx="17.5" cy="6.5" r="1" />
       </svg>
     );
-
   }
 
   return (
@@ -69,7 +94,7 @@ function SocialIcon({ name }) {
   );
 }
 
-function Home({darkMode, onToggleTheme, posts,postsLoading}) {
+function Home({ darkMode, onToggleTheme, posts, postsLoading }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -81,7 +106,10 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
     }
 
     const section = document.getElementById(location.hash.slice(1));
-    section?.scrollIntoView({ behavior: "smooth", block: "start"});
+    section?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
   }, [location.hash]);
 
   const visiblePosts = useMemo(() => {
@@ -95,12 +123,12 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
   }, [posts, query]);
 
   return (
-    <div
-      className={darkMode ? "site dark" : "site"}
-    >
-      <button className="menu-toggle" onClick={() =>
-          setSidebarOpen(!sidebarOpen)
-        } aria-label={sidebarOpen ? "Close navigation" : "Open navigation"} aria-expanded={sidebarOpen}
+    <div className={darkMode ? "site dark" : "site"}>
+      <button
+        className="menu-toggle"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label={sidebarOpen ? "Close navigation" : "Open navigation"}
+        aria-expanded={sidebarOpen}
       >
         {sidebarOpen ? "×" : "☰"}
       </button>
@@ -110,22 +138,24 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
           <span>BA</span> Biniyam Abebe
         </Link>
 
-        <nav className={ sidebarOpen ? "is-open" : "" }>
+        <nav className={sidebarOpen ? "is-open" : ""}>
           <Link to="/" onClick={() => setSidebarOpen(false)}>
-              Home
+            Home
           </Link>
-          <Link to="/#about" onClick={() =>setSidebarOpen(false)}>
+          <Link to="/#about" onClick={() => setSidebarOpen(false)}>
             About
           </Link>
-          <Link to="/#writing" onClick={() =>setSidebarOpen(false)}>
+          <Link to="/#writing" onClick={() => setSidebarOpen(false)}>
             Writing
           </Link>
         </nav>
 
-        <button className="theme-toggle" onClick={() => onToggleTheme()} aria-label="Toggle color theme">
-          <span>
-            {darkMode ? "☼" : "◐"}
-          </span>
+        <button
+          className="theme-toggle"
+          onClick={() => onToggleTheme()}
+          aria-label="Toggle color theme"
+        >
+          <span>{darkMode ? "☼" : "◐"}</span>
         </button>
       </header>
 
@@ -134,13 +164,12 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
         <section className="intro" id="about">
           <div className="intro-layout">
             <div className="intro-content">
-              <p className="eyebrow">
-                WRITER & MED-STUDENT
-              </p>
+              <p className="eyebrow">WRITER & MED-STUDENT</p>
 
-              <h1>Biniyam
+              <h1>
+                Biniyam
                 <br />
-              <em>Abebe</em>
+                <em>Abebe</em>
               </h1>
 
               <p className="intro-copy">
@@ -165,7 +194,8 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
                 share what I learn, encourage
                 others in their faith, and help
                 young Christians grow closer
-                to God and His Word.</p>
+                to God and His Word.
+              </p>
 
               <Link className="text-link" to="/#writing">
                 Explore the writing{" "}
@@ -174,9 +204,7 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
             </div>
           </div>
 
-          <div className="intro-mark">
-            ✳
-          </div>
+          <div className="intro-mark">✳</div>
         </section>
 
         {/* SELECTED WRITING */}
@@ -187,34 +215,91 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
               <h2>Selected writing</h2>
             </div>
           </div>
+
           {postsLoading ? (
             <p className="empty-state">Loading writing...</p>
           ) : visiblePosts.length ? (
             <div className="posts-grid">
-              {visiblePosts.map(
-                (post) => (
-                  <article className="post" key={post.id}>
-                    {post.coverImage && (<img src={post.coverImage} alt=""/>)}
-                    <div className="post-info">
-                      <div className="post-meta">
-                        <span>{post.category}</span>
-                        <span> {new Date(post.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <h3>{post.title}</h3>
-                      <p>{getPostPreview(post)}</p>
-                      <div className="post-footer">
-                        <button type="button" onClick={() => navigate(`/post/${post.id}`,
-                          {state: {backgroundLocation:location}})}
-                          aria-label={`Read ${post.title}`}
-                        >
-                          Read article{" "}
-                          <b>↗</b>
-                        </button>
-                      </div>
+              {visiblePosts.map((post) => (
+                <article className="post" key={post.id}>
+                  {post.coverImage && (
+                    <img src={post.coverImage} alt="" />
+                  )}
+
+                  <div className="post-info">
+                    <div className="post-meta">
+                      <span>{post.category}</span>
+                      <span>
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                  </article>
-                )
-              )}
+
+                    <h3>{post.title}</h3>
+                    <p>{getPostPreview(post)}</p>
+
+                    {/* Show this section only when the post has attachments. */}
+                    {post.attachments?.length > 0 && (
+                      <section
+                        className="post-attachments"
+                        aria-label={`Attachments for ${post.title}`}
+                      >
+                        <h4>Attached files</h4>
+
+                        <ul className="post-attachment-list">
+                          {post.attachments.map((attachment) => (
+                            <li
+                              className="post-attachment-item"
+                              key={attachment.id}
+                            >
+                              <span
+                                className="post-attachment-icon"
+                                aria-hidden="true"
+                              >
+                                📄
+                              </span>
+
+                              <div className="post-attachment-details">
+                                <strong>{attachment.fileName}</strong>
+                                <small>
+                                  {attachment.fileType}
+                                  {attachment.fileSize
+                                    ? ` · ${formatFileSize(attachment.fileSize)}`
+                                    : ""}
+                                </small>
+                              </div>
+
+                              <a
+                                className="post-attachment-link"
+                                href={attachment.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`Open ${attachment.fileName}`}
+                              >
+                                Open ↗
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    )}
+
+                    <div className="post-footer">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/post/${post.id}`, {
+                            state: { backgroundLocation: location }
+                          })
+                        }
+                        aria-label={`Read ${post.title}`}
+                      >
+                        Read article{" "}
+                        <b>↗</b>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
           ) : (
             <p className="empty-state">No notes found.</p>
@@ -238,19 +323,12 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
               target="_blank"
               rel="noreferrer"
             >
-              <span
-                className="social-icon"
-                aria-label="TikTok"
-              >
+              <span className="social-icon" aria-label="TikTok">
                 <SocialIcon name="tiktok" />
               </span>
-
               <span>
-                <strong>
-                  Tiktok
-                </strong>
+                <strong>Tiktok</strong>
               </span>
-
               <b>↗</b>
             </a>
 
@@ -259,19 +337,12 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
               target="_blank"
               rel="noreferrer"
             >
-              <span
-                className="social-icon"
-                aria-label="Instagram"
-              >
+              <span className="social-icon" aria-label="Instagram">
                 <SocialIcon name="instagram" />
               </span>
-
               <span>
-                <strong>
-                  Instagram
-                </strong>
+                <strong>Instagram</strong>
               </span>
-
               <b>↗</b>
             </a>
 
@@ -280,19 +351,12 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
               target="_blank"
               rel="noreferrer"
             >
-              <span
-                className="social-icon"
-                aria-label="Facebook"
-              >
+              <span className="social-icon" aria-label="Facebook">
                 <SocialIcon name="facebook" />
               </span>
-
               <span>
-                <strong>
-                  Facebook
-                </strong>
+                <strong>Facebook</strong>
               </span>
-
               <b>↗</b>
             </a>
           </div>
@@ -300,19 +364,15 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
       </main>
 
       <footer>
-        <span>
-          © 2024 Biniyam Abebe
-        </span>
+        <span>© 2024 Biniyam Abebe</span>
 
         <div>
           <a href="https://www.instagram.com/biniyam7185/?hl=en">
             Instagram
           </a>
-
           <a href="https://www.tiktok.com/@binu_abebe">
             Tiktok
           </a>
-
           <a href="https://web.facebook.com/biniyam.abebe.98284?locale=fr_FR">
             Facebook
           </a>
@@ -322,99 +382,169 @@ function Home({darkMode, onToggleTheme, posts,postsLoading}) {
   );
 }
 
-
-function ArticleRoute({
-  darkMode,
-  onToggleTheme
-}) {
+function ArticleRoute({ darkMode, onToggleTheme }) {
   return (
     <>
       <Home
         darkMode={darkMode}
-        onToggleTheme={
-          onToggleTheme
-        }
+        onToggleTheme={onToggleTheme}
         posts={[]}
         postsLoading={false}
       />
 
       <ArticlePage
         darkMode={darkMode}
-        onToggleTheme={
-          onToggleTheme
-        }
+        onToggleTheme={onToggleTheme}
       />
     </>
   );
 }
 
 function App() {
-  const [isAdmin, setIsAdmin] =useState(false);
-  const [authReady, setAuthReady] =useState(false);
-  const [darkMode, setDarkMode] =useState(false);
-  const [posts, setPosts] =useState([]);
-  const [postsLoading, setPostsLoading] =useState(true);
-  const navigate =useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const navigate = useNavigate();
   const location = useLocation();
   const backgroundLocation = location.state?.backgroundLocation;
+
   useEffect(() => {
     refreshAccessToken()
       .then(setIsAdmin)
-      .catch(() =>
-        setIsAdmin(false)
-      )
-      .finally(() =>
-        setAuthReady(true)
-      );
+      .catch(() => setIsAdmin(false))
+      .finally(() => setAuthReady(true));
   }, []);
 
   useEffect(() => {
     fetchPublishedPosts()
       .then(setPosts)
       .catch((error) =>
-        console.error(
-          "Failed to load posts:",
-          error
-        )
+        console.error("Failed to load posts:", error)
       )
-      .finally(() =>
-        setPostsLoading(false)
-      );
+      .finally(() => setPostsLoading(false));
   }, []);
 
-    const handlePostSaved = (savedPost) => {
-      setPosts((currentPosts) => {
-        const remainingPosts = currentPosts.filter((post) => post.id !== savedPost.id);
+  const handlePostSaved = async (savedPost) => {
+    setPosts((currentPosts) => {
+      const remainingPosts = currentPosts.filter(
+        (post) => post.id !== savedPost.id
+      );
 
-        return savedPost.published ? [savedPost, ...remainingPosts] : remainingPosts;
-      });
-    };
+      return savedPost.published
+        ? [savedPost, ...remainingPosts]
+        : remainingPosts;
+    });
 
-    const handlePostDeleted = (postId) => {
-      setPosts((currentPosts) => currentPosts.filter((post) => post.id !== postId));
-    };
+    // Refresh the public list so newly uploaded attachments are included.
+    try {
+      const updatedPosts = await fetchPublishedPosts();
+      setPosts(updatedPosts);
+    } catch (error) {
+      console.error(
+        "Failed to refresh published posts:",
+        error
+      );
+    }
+  };
+
+  const handlePostDeleted = (postId) => {
+    setPosts((currentPosts) =>
+      currentPosts.filter((post) => post.id !== postId)
+    );
+  };
 
   return (
     <>
       <Routes location={backgroundLocation || location}>
-        <Route path="/" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
-        <Route path="/about" element={<Home darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} posts={posts} postsLoading={postsLoading} />} />
-        <Route path="/post/:id" element={<ArticleRoute darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
-        <Route path="/admin" element={<AdminLoginRoute isAdmin={isAdmin} authReady={authReady} onLogin={() => setIsAdmin(true)} darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
+        <Route
+          path="/"
+          element={
+            <Home
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+              posts={posts}
+              postsLoading={postsLoading}
+            />
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <Home
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+              posts={posts}
+              postsLoading={postsLoading}
+            />
+          }
+        />
+        <Route
+          path="/post/:id"
+          element={
+            <ArticleRoute
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+            />
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminLoginRoute
+              isAdmin={isAdmin}
+              authReady={authReady}
+              onLogin={() => setIsAdmin(true)}
+              darkMode={darkMode}
+              onToggleTheme={() => setDarkMode(!darkMode)}
+            />
+          }
+        />
 
-        <Route element={<ProtectedRoute isAdmin={isAdmin} authReady={authReady} />}>
-          <Route element={<AdminLayout darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />}>
-            <Route path="/admin/*" element={<AdminContent onPostSaved={handlePostSaved} onPostDeleted={handlePostDeleted} />} />
+        <Route
+          element={
+            <ProtectedRoute
+              isAdmin={isAdmin}
+              authReady={authReady}
+            />
+          }
+        >
+          <Route
+            element={
+              <AdminLayout
+                darkMode={darkMode}
+                onToggleTheme={() => setDarkMode(!darkMode)}
+              />
+            }
+          >
+            <Route
+              path="/admin/*"
+              element={
+                <AdminContent
+                  onPostSaved={handlePostSaved}
+                  onPostDeleted={handlePostDeleted}
+                />
+              }
+            />
           </Route>
         </Route>
       </Routes>
 
-    {backgroundLocation && (
-      <Routes>
-        <Route path="/post/:id" element={<ArticlePage darkMode={darkMode} onToggleTheme={() => setDarkMode(!darkMode)} />} />
-      </Routes>
-    )}
-  </>
+      {backgroundLocation && (
+        <Routes>
+          <Route
+            path="/post/:id"
+            element={
+              <ArticlePage
+                darkMode={darkMode}
+                onToggleTheme={() => setDarkMode(!darkMode)}
+              />
+            }
+          />
+        </Routes>
+      )}
+    </>
   );
 }
 

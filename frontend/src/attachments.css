@@ -1,0 +1,60 @@
+.post-attachments {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color, rgba(120, 120, 120, 0.25));
+}
+
+.post-attachments h4 {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.post-attachment-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, rgba(120, 120, 120, 0.25));
+  border-radius: 8px;
+}
+
+.post-attachment-icon {
+  flex: 0 0 auto;
+  font-size: 1.15rem;
+}
+
+.post-attachment-details {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.post-attachment-details strong {
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.post-attachment-details small {
+  overflow-wrap: anywhere;
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+
+.post-attachment-link {
+  flex: 0 0 auto;
+  font-size: 0.82rem;
+  text-decoration: none;
+}
