@@ -8,5 +8,6 @@ const upload = multer({})
 const router = express.Router()
 
 router.post("/", authenticate, authorizeAdmin, upload.single("file"), uploadController);
+router.post("/", authenticate, authorizeAdmin, upload.single("coverImage"), uploadController);
 
 export default router

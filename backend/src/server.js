@@ -13,7 +13,9 @@ const app = express();
 const corsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = new Set([
-      "http://localhost:5173",
+      // "http://localhost:5173",
+      // "http://localhost:5173/admin",
+      
       "https://personal-blog-jade-nine.vercel.app",
       "https://biniyam-personalblog.vercel.app",
     ].filter(Boolean));

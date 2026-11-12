@@ -1,8 +1,7 @@
 import cloudinary from '../cloudinary.js';
+import prisma from '../lib/prisma.js';
 
 const startTime = performance.now();
-
-
 
 const uploadController = async (req, res) => {
     try {
@@ -26,6 +25,17 @@ const uploadController = async (req, res) => {
             });
         }
 
+        const postId = req.body.purpose === "blog_document"
+            ? Number(req.body.postId)
+            : null;
+
+        if (req.body.purpose === "blog_document" &&
+            (!Number.isInteger(postId) || postId <= 0)) {
+            return res.status(400).json({
+                message: "A valid postId is required"
+            });
+        }
+
         const result = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
                 {
@@ -41,14 +51,29 @@ const uploadController = async (req, res) => {
                 }
             );
 
-            stream.end(req.file.buffer);
+            stream.end(req.file.buffer)
         });
+
+        const attachment = req.body.purpose === "blog_document"
+            ? await prisma.attachment.create({
+                data: {
+                    fileName: req.file.originalname,
+                    fileUrl: result.secure_url,
+                    publicId: result.public_id,
+                    fileType: req.file.mimetype,
+                    fileSize: req.file.size,
+                    postId
+                }
+            })
+            : null;
+
 
         return res.status(200).json({
             message: "File uploaded successfully",
             url: result.secure_url,
             public_id: result.public_id,
-            format: result.format
+            format: result.format,
+            ...(attachment || {})
         });
 
     } catch (error) {
@@ -58,8 +83,5 @@ const uploadController = async (req, res) => {
     }
 };
 
-const endTime = performance.now();
-
-console.log(`Upload took: ${(endTime - startTime).toFixed(2)} ms`);
 
 export default uploadController
