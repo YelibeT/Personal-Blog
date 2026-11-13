@@ -20,6 +20,10 @@ import {
 import "./App.css";
 import "./attachments.css";
 
+const defaultAuthorName = "Biniyam Abebe";
+const defaultAuthorBio =
+  "I am a medical student and writer with a passion for sharing knowledge and creating meaningful content. As a Christian young person, I write about my personal experiences, spiritual struggles, lessons, and discoveries, using the Bible to understand and clarify what I have experienced. I believe that when biblical truth is shared in a simple, honest, and meaningful way, it can make a lasting impact on the spiritual lives of Christians. Through my writing and teaching, my desire is to share what I learn, encourage others in their faith, and help young Christians grow closer to God and His Word.";
+
 const stripPostFormatting = (value = "") =>
   value
     .replace(/<[^>]*>/g, " ")
@@ -100,6 +104,14 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading, profile }) {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const authorName = profile?.displayName?.trim() || defaultAuthorName;
+  const authorNameParts = authorName.split(/\s+/);
+  const authorInitials = authorNameParts
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const authorBio = profile?.bio ?? defaultAuthorBio;
 
   useEffect(() => {
     if (!location.hash) {
@@ -135,8 +147,8 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading, profile }) {
       </button>
 
       <header className="topbar">
-        <Link className="wordmark" to="/" aria-label="Biniyam Abebe home">
-          <span>BA</span> Biniyam Abebe
+        <Link className="wordmark" to="/" aria-label={`${authorName} home`}>
+          <span>{authorInitials}</span> {authorName}
         </Link>
 
         <nav className={sidebarOpen ? "is-open" : ""}>
@@ -166,9 +178,15 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading, profile }) {
           <div className="intro-layout">
             <div className="intro-visual">
               <h1>
-                Biniyam
-                <br />
-                <em>Abebe</em>
+                {authorNameParts.length > 1 ? (
+                  <>
+                    {authorNameParts.slice(0, -1).join(" ")}
+                    <br />
+                    <em>{authorNameParts[authorNameParts.length - 1]}</em>
+                  </>
+                ) : (
+                  authorName
+                )}
               </h1>
               {profile?.profileImage && (
                 <div className="profile-card">
@@ -182,31 +200,7 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading, profile }) {
 
             <div className="intro-content">
               <p className="eyebrow">WRITER & MED-STUDENT</p>
-
-              <p className="intro-copy">
-                I am a medical student and
-                writer with a passion for
-                sharing knowledge and
-                creating meaningful content.
-                As a Christian young person,
-                I write about my personal
-                experiences, spiritual
-                struggles, lessons, and
-                discoveries, using the Bible
-                to understand and clarify
-                what I have experienced. I
-                believe that when biblical
-                truth is shared in a simple,
-                honest, and meaningful way,
-                it can make a lasting impact
-                on the spiritual lives of
-                Christians. Through my writing
-                and teaching, my desire is to
-                share what I learn, encourage
-                others in their faith, and help
-                young Christians grow closer
-                to God and His Word.
-              </p>
+              <p className="intro-copy">{authorBio}</p>
 
               <Link className="text-link" to="/#writing">
                 Explore the writing{" "}
@@ -380,7 +374,7 @@ function Home({ darkMode, onToggleTheme, posts, postsLoading, profile }) {
       </main>
 
       <footer>
-        <span>© 2024 Biniyam Abebe</span>
+        <span>© 2024 {authorName}</span>
 
         <div>
           <a href="https://www.instagram.com/biniyam7185/?hl=en">
@@ -445,12 +439,28 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (location.pathname.startsWith("/admin")) {
+      return;
+    }
+
+    let active = true;
+
     fetchPublicProfile()
-      .then(setProfile)
-      .catch((error) =>
-        console.error("Failed to load public profile:", error)
-      );
-  }, []);
+      .then((data) => {
+        if (active) {
+          setProfile(data);
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          console.error("Failed to load public profile:", error);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [location.pathname]);
 
   const handlePostSaved = async (savedPost) => {
     setPosts((currentPosts) => {

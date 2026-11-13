@@ -1963,7 +1963,13 @@ footer i {
   text-align: right;
 }
 
-.profile-form > button {
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profile-actions > button {
   border: 0;
   background: var(--ink);
   color: var(--paper);
@@ -1973,11 +1979,18 @@ footer i {
   transition: background 0.2s, opacity 0.2s;
 }
 
-.profile-form > button:hover:not(:disabled) {
-  background: var(--accent);
+.profile-actions > button.secondary {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
 }
 
-.profile-form > button:disabled {
+.profile-actions > button:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.profile-actions > button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

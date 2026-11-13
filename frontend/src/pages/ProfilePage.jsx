@@ -10,10 +10,15 @@ function ProfilePage() {
   const [bio, setBio] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [profileImageFile, setProfileImageFile] = useState(null);
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -141,10 +146,60 @@ function ProfilePage() {
       setProfileImage(data.profileImage || "");
 
       setMessage("Profile updated successfully.");
+      setEditingDetails(false);
     } catch (err) {
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCancelDetailsEdit = () => {
+    setDisplayName(profile.displayName || "");
+    setBio(profile.bio || "");
+    setEditingDetails(false);
+    setError("");
+    setMessage("");
+  };
+
+  const handleChangePassword = async (event) => {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+
+    if (newPassword !== confirmPassword) {
+      setError("New password and confirmation do not match.");
+      return;
+    }
+
+    setChangingPassword(true);
+
+    try {
+      const response = await apiFetch("/auth/password", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to change password.");
+      }
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setMessage(data.message || "Password changed successfully.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -212,14 +267,15 @@ function ProfilePage() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="display-name">Display name</label>
+            <label htmlFor="display-name">Name</label>
             <input
               id="display-name"
               type="text"
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
+              disabled={!editingDetails}
               maxLength={100}
-              placeholder="Enter your display name"
+              placeholder="Enter your name"
             />
           </div>
 
@@ -229,6 +285,7 @@ function ProfilePage() {
               id="bio"
               value={bio}
               onChange={(event) => setBio(event.target.value)}
+              disabled={!editingDetails}
               maxLength={500}
               rows={5}
               placeholder="Write something about yourself..."
@@ -236,6 +293,44 @@ function ProfilePage() {
             <small>{bio.length}/500 characters</small>
           </div>
         </section>
+
+        <div className="profile-actions">
+          {!editingDetails ? (
+            <button
+              className="secondary"
+              type="button"
+              onClick={() => {
+                setError("");
+                setMessage("");
+                setEditingDetails(true);
+              }}
+            >
+              Edit name and bio
+            </button>
+          ) : (
+            <button
+              className="secondary"
+              type="button"
+              onClick={handleCancelDetailsEdit}
+              disabled={saving || uploadingImage}
+            >
+              Cancel
+            </button>
+          )}
+
+          {(editingDetails || profileImageFile) && (
+            <button
+              type="submit"
+              disabled={saving || uploadingImage}
+            >
+              {uploadingImage
+                ? "Uploading image..."
+                : saving
+                  ? "Saving..."
+                  : "Save changes"}
+            </button>
+          )}
+        </div>
 
         <section className="profile-section">
           <h2>Account information</h2>
@@ -258,17 +353,58 @@ function ProfilePage() {
             />
           </div>
         </section>
+      </form>
 
-        <button
-          type="submit"
-          disabled={saving || uploadingImage}
-        >
-          {uploadingImage
-            ? "Uploading image..."
-            : saving
-              ? "Saving..."
-              : "Save changes"}
-        </button>
+      <form className="profile-form" onSubmit={handleChangePassword}>
+        <section className="profile-section">
+          <h2>Change password</h2>
+          <p>Verify your current password before choosing a new one.</p>
+
+          <div className="form-group">
+            <label htmlFor="current-password">Current password</label>
+            <input
+              id="current-password"
+              type="password"
+              autoComplete="current-password"
+              value={currentPassword}
+              onChange={(event) => setCurrentPassword(event.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="new-password">New password</label>
+            <input
+              id="new-password"
+              type="password"
+              autoComplete="new-password"
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              minLength={8}
+              required
+            />
+            <small>At least 8 characters; maximum 72 UTF-8 bytes.</small>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirm-password">Confirm new password</label>
+            <input
+              id="confirm-password"
+              type="password"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              minLength={8}
+              required
+            />
+          </div>
+
+          <div className="profile-actions">
+            <button type="submit" disabled={changingPassword}>
+              {changingPassword ? "Changing password..." : "Change password"}
+            </button>
+          </div>
+        </section>
       </form>
     </div>
   );
